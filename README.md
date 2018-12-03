@@ -16,6 +16,6 @@ homeconnect:
 
 ## Feedback
 
-This is an early development preview (**use at your own risk!**). Please report problems by [opening an issue](https://github.com/DavidMStraub/homeassistant-homeconnect/issues).
+This is an early development preview (**use at your own risk!**). Please report problems by [opening an issue](https://github.com/DavidMStraub/homeassistant-homeconnect/issues). Feel free to report success in the [Home Assistant forum](https://community.home-assistant.io/t/home-connect-alpha-testers-wanted/82603).
 
 Pull requests are welcome!
