@@ -1,0 +1,14 @@
+{
+  "config": {
+    "title": "Home Connect",
+    "step": {
+      "user": {
+        "title": "Home Connect",
+        "data": {
+            "client_id": "Client ID",
+            "client_secret": "Client Secret"
+        }
+    }
+  }
+}
+}
