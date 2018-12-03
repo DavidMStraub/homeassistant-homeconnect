@@ -177,6 +177,12 @@ class HomeConnectDevice:
               times=2,
               exceptions=(HomeConnectError, ValueError),
               sleep=0)
+        program_active = retry(self.appliance.get_programs_active,
+              times=2,
+              exceptions=(HomeConnectError, ValueError),
+              sleep=0)
+        if program_active and 'key' in program_active:
+            self.appliance.status['BSH.Common.Root.ActiveProgram'] = {'value': program_active['key']}
         self.appliance.listen_events(callback=self.event_callback)
         self.entities = []
 
