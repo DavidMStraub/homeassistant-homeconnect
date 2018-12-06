@@ -158,7 +158,8 @@ def get_devices(hc):
         elif app.type == 'CoffeeMaker':
             device = CoffeeMaker(app)
         else:
-            break
+            _LOGGER.warning("Appliance type {} not implemented.".format(app.type))
+            continue
         devices.append({'device': device,
                         'entities': device.get_entities()})
     return devices
