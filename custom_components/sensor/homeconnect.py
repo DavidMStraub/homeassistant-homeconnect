@@ -49,7 +49,7 @@ class HomeConnectSensor(HomeConnectEntity):
             self._state = None
         else:
             self._state = status[self._key].get('value', None)
-        _LOGGER.warning("Updated, new state: {}".format(self._state))
+        _LOGGER.debug("Updated, new state: {}".format(self._state))
     #
     # @property
     # def device_class(self):

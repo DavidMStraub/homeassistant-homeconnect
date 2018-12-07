@@ -51,12 +51,12 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
 
     def turn_on(self, **kwargs):
         """Start the program."""
-        _LOGGER.warning("tried to turn on program {}".format(self.program_name))
+        _LOGGER.debug("tried to turn on program {}".format(self.program_name))
         self.device.appliance.start_program(self.program_name)
 
     def turn_off(self, **kwargs):
         """Stop the program."""
-        _LOGGER.warning("tried to stop on program {}".format(self.program_name))
+        _LOGGER.debug("tried to stop program {}".format(self.program_name))
         self.device.appliance.stop_program()
 
     def update(self):
@@ -70,7 +70,7 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
             self._state = True
         else:
             self._state = False
-        _LOGGER.warning("Updated, new state: {}".format(self._state))
+        _LOGGER.debug("Updated, new state: {}".format(self._state))
 
 
 class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
@@ -85,12 +85,12 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
 
     def turn_on(self, **kwargs):
         """Switch the device on."""
-        _LOGGER.warning("tried to switch on {}".format(self.name))
+        _LOGGER.debug("tried to switch on {}".format(self.name))
         self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  'BSH.Common.Setting.PowerState.On')
 
     def turn_off(self, **kwargs):
         """Switch the device off."""
-        _LOGGER.warning("tried to switch off {}".format(self.name))
+        _LOGGER.debug("tried to switch off {}".format(self.name))
         self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  self.device._power_off_state)
 
     def update(self):
@@ -100,4 +100,4 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
             self._state = True
         else:
             self._state = False
-        _LOGGER.warning("Updated, new state: {}".format(self._state))
+        _LOGGER.debug("Updated, new state: {}".format(self._state))

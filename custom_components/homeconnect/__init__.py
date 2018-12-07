@@ -54,7 +54,7 @@ def setup(hass, config, add_entities=None):
                      simulate=config.get(DOMAIN, {}).get('simulate', False))
 
     if not hc.oauth.token:
-        _LOGGER.warning("no token; requesting authorization")
+        _LOGGER.debug("no token; requesting authorization")
         hass.http.register_view(HomeConnectAuthCallbackView(
             config, add_entities, hc))
         request_configuration(hass, hc)
@@ -190,9 +190,9 @@ class HomeConnectDevice:
         self.entities = []
 
     def event_callback(self, appliance):
-        _LOGGER.warning("Update triggered on {}".format(appliance.name))
-        _LOGGER.warning(self.entities)
-        _LOGGER.warning(self.appliance.status)
+        _LOGGER.debug("Update triggered on {}".format(appliance.name))
+        _LOGGER.debug(self.entities)
+        _LOGGER.debug(self.appliance.status)
         for entity in self.entities:
             entity.async_entity_update()
 
@@ -219,7 +219,7 @@ class HomeConnectEntity(Entity):
 
     @callback
     def async_entity_update(self):
-        _LOGGER.warning("Entity update triggered on {}".format(self))
+        _LOGGER.debug("Entity update triggered on {}".format(self))
         self.schedule_update_ha_state(True)
 
 
