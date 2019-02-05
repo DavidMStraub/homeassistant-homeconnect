@@ -45,7 +45,7 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
 
     def update(self):
         state = self.device.appliance.status.get('BSH.Common.Status.DoorState', {})
-        if state.get('value', None) == 'BSH.Common.EnumType.DoorState.Closed':
+        if state.get('value', None) in ['BSH.Common.EnumType.DoorState.Closed', 'BSH.Common.EnumType.DoorState.Locked']:
             self._state = False
         elif state.get('value', None) == 'BSH.Common.EnumType.DoorState.Open':
             self._state = True
