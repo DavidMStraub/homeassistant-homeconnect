@@ -30,7 +30,7 @@ CONFIGURATOR_DESCRIPTION = 'To link your Home Connect account, ' \
 CONFIGURATOR_LINK_NAME = 'Link Home Connect account'
 CONFIGURATOR_SUBMIT_CAPTION = 'I authorized successfully'
 
-REQUIREMENTS = ['homeconnect==0.1']
+REQUIREMENTS = ['homeconnect==0.2']
 
 
 _LOGGER = logging.getLogger(__name__)
