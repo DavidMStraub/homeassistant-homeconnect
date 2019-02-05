@@ -87,25 +87,6 @@ def request_configuration(hass, hc):
         description=CONFIGURATOR_DESCRIPTION,
         submit_caption=CONFIGURATOR_SUBMIT_CAPTION)
 
-# @config_entries.HANDLERS.register(DOMAIN)
-# class HomeConnectFlowHandler(config_entries.ConfigFlow):
-#
-#     VERSION = 1
-#
-#     async def async_step_user(self, user_input=None):
-#         data_schema = OrderedDict()
-#         data_schema[vol.Required('client_id')] = str
-#         data_schema[vol.Required('client_secret')] = str
-#
-#         if user_input is not None:
-#             self.hass.http.register_view(HomeConnectAuthCallbackView())
-#
-#
-#         return self.async_show_form(
-#             step_id='user',
-#             data_schema=vol.Schema(data_schema)
-#         )
-
 
 class HomeConnectAuthCallbackView(HomeAssistantView):
     """HomeConnect Authorization Callback View."""
@@ -131,14 +112,14 @@ class HomeConnectAuthCallbackView(HomeAssistantView):
 def retry(f, args=None, times=10, exceptions=(ValueError,), sleep=0.1):
     for i in range(times):
         if i > 0:
-            _LOGGER.error("Error while executing {}. Retry #{}".format(f, i))
+            _LOGGER.warn("Error while executing {}. Retry #{}".format(f, i))
         try:
             if args:
                 return f(*args)
             else:
                 return f()
         except exceptions as e:
-            _LOGGER.error('{} {}'.format(f, e))
+            _LOGGER.warn('{} {}'.format(f, e))
             time.sleep(sleep)
             continue
         break
@@ -179,14 +160,15 @@ class HomeConnectDevice:
     def __init__(self, appliance):
         from homeconnect.api import HomeConnectError
         self.appliance = appliance
-        retry(self.appliance.get_status,
-              times=2,
-              exceptions=(HomeConnectError, ValueError),
-              sleep=0)
-        program_active = retry(self.appliance.get_programs_active,
-              times=2,
-              exceptions=(HomeConnectError, ValueError),
-              sleep=0)
+        try:
+            self.appliance.get_status()
+        except (HomeConnectError, ValueError):
+            _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
+        try:
+            program_active = self.appliance.get_programs_active()
+        except (HomeConnectError, ValueError):
+            _LOGGER.debug("Unable to fetch active programs. Probably offline.")
+            program_active = None
         if program_active and 'key' in program_active:
             self.appliance.status['BSH.Common.Root.ActiveProgram'] = {'value': program_active['key']}
         self.appliance.listen_events(callback=self.event_callback)
@@ -210,11 +192,6 @@ class HomeConnectEntity(Entity):
         """No polling needed."""
         return False
 
-    # @property
-    # def unique_id(self) -> str:
-    #     """Return a unique ID."""
-    #     return self.appliance.haId
-
     @property
     def name(self):
         """Return the name of the node (used for Entity_ID)."""
@@ -235,11 +212,6 @@ class DeviceWithPrograms:
 
     def get_programs_available(self):
         return self._programs
-
-    # def get_programs_available(self):
-    #     from homeconnect.api import HomeConnectError
-    #     return retry(self.appliance.get_programs_available,
-    #                  exceptions=(HomeConnectError, ValueError))
 
     def get_program_switches(self):
         programs = self.get_programs_available()
@@ -394,13 +366,7 @@ class Hood(DeviceWithPrograms, HomeConnectDevice):
                 'sensor': program_sensors,}
 
 
-class FridgeFreezer(DeviceWithDoor,HomeConnectDevice):
-
-    _programs = [
-        {'name': 'LaundryCare.Dryer.Program.Cotton',},
-        {'name': 'LaundryCare.Dryer.Program.Synthetic',},
-        {'name': 'LaundryCare.Dryer.Program.Mix',},
-    ]
+class FridgeFreezer(DeviceWithDoor, HomeConnectDevice):
 
     def __init__(self, appliance):
         super().__init__(appliance)
@@ -409,14 +375,3 @@ class FridgeFreezer(DeviceWithDoor,HomeConnectDevice):
         door_entity = self.get_door_entity()
         return {'binary_sensor': [door_entity],
                 }
-
-
-# async def async_setup_entry(hass, entry):
-#     """Set up Home Connect from a config entry."""
-#     from homeconnect import HomeConnect
-#
-#     _LOGGER.info("setting up HC entry: {}".format(entry))
-#
-#     _LOGGER.debug("async_setup_homeconnect is done")
-#
-#     return True
