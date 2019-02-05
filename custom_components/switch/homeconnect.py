@@ -94,7 +94,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
         self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  self.device._power_off_state)
 
     def update(self):
-        if (self.device.appliance.status.get('BSH.Common.Setting.PowerState', {}).get('value', None) == 'BSH.Common.EnumType.PowerState.On':
+        if self.device.appliance.status.get('BSH.Common.Setting.PowerState', {}).get('value', None) == 'BSH.Common.EnumType.PowerState.On':
             self._state = True
         else:
             self._state = False
