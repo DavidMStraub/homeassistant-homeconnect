@@ -14,6 +14,9 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import callback
 import time
+import os
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
 DOMAIN = 'homeconnect'
