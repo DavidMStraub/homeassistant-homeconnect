@@ -86,7 +86,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
     def turn_on(self, **kwargs):
         """Switch the device on."""
         _LOGGER.debug("tried to switch on {}".format(self.name))
-        self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  'BSH.Common.Setting.PowerState.On')
+        self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  'BSH.Common.EnumType.PowerState.On')
 
     def turn_off(self, **kwargs):
         """Switch the device off."""
