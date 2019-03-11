@@ -266,6 +266,23 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         {'name': 'Dishcare.Dishwasher.Program.Auto3',},
         {'name': 'Dishcare.Dishwasher.Program.Eco50',},
         {'name': 'Dishcare.Dishwasher.Program.Quick45',},
+        {'name': 'Dishcare.Dishwasher.Program.Intensiv70',},
+        {'name': 'Dishcare.Dishwasher.Program.Normal65',},
+        {'name': 'Dishcare.Dishwasher.Program.Glas40',},
+        {'name': 'Dishcare.Dishwasher.Program.GlassCare',},
+        {'name': 'Dishcare.Dishwasher.Program.NightWash',},
+        {'name': 'Dishcare.Dishwasher.Program.Quick65',},
+        {'name': 'Dishcare.Dishwasher.Program.Normal45',},
+        {'name': 'Dishcare.Dishwasher.Program.Intensiv45',},
+        {'name': 'Dishcare.Dishwasher.Program.AutoHalfLoad',},
+        {'name': 'Dishcare.Dishwasher.Program.IntensivPower',},
+        {'name': 'Dishcare.Dishwasher.Program.MagicDaily',},
+        {'name': 'Dishcare.Dishwasher.Program.Super60',},
+        {'name': 'Dishcare.Dishwasher.Program.Kurz60',},
+        {'name': 'Dishcare.Dishwasher.Program.ExpressSparkle65',},
+        {'name': 'Dishcare.Dishwasher.Program.MachineCare',},
+        {'name': 'Dishcare.Dishwasher.Program.SteamFresh',},
+        {'name': 'Dishcare.Dishwasher.Program.MaximumCleaning',},
     ]
 
     def __init__(self, appliance):
