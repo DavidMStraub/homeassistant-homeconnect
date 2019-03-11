@@ -96,6 +96,19 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
     def update(self):
         if self.device.appliance.status.get('BSH.Common.Setting.PowerState', {}).get('value', None) == 'BSH.Common.EnumType.PowerState.On':
             self._state = True
-        else:
+        if self.device.appliance.status.get('BSH.Common.Setting.PowerState', {}).get('value', None) == 'BSH.Common.EnumType.PowerState.Off':
             self._state = False
+        elif self.device.appliance.status.get('BSH.Common.Status.OperationState', {}).get('value', None) in [
+            'BSH.Common.EnumType.OperationState.Ready',
+            'BSH.Common.EnumType.OperationState.DelayedStart',
+            'BSH.Common.EnumType.OperationState.Run',
+            'BSH.Common.EnumType.OperationState.Pause',
+            'BSH.Common.EnumType.OperationState.ActionRequired',
+            'BSH.Common.EnumType.OperationState.Aborting',
+        ]:
+            self._state = True
+        elif self.device.appliance.status.get('BSH.Common.Status.OperationState', {}).get('value', None) == 'BSH.Common.EnumType.OperationState.Inactive':
+            self._state = False
+        else:
+            self._state = None
         _LOGGER.debug("Updated, new state: {}".format(self._state))
