@@ -143,6 +143,8 @@ def get_devices(hc):
             device = CoffeeMaker(app)
         elif app.type == 'Hood':
             device = Hood(app)
+        elif app.type == 'Hob':
+            device = Hob(app)
         else:
             _LOGGER.warning("Appliance type {} not implemented.".format(app.type))
             continue
@@ -304,6 +306,7 @@ class Oven(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         {'name': 'Cooking.Oven.Program.HeatingMode.HotAir',},
         {'name': 'Cooking.Oven.Program.HeatingMode.TopBottomHeating',},
         {'name': 'Cooking.Oven.Program.HeatingMode.PizzaSetting',},
+        {'name': 'Cooking.Oven.Program.Microwave.600Watt',}
     ]
 
     _power_off_state = 'BSH.Common.EnumType.PowerState.Standby'
@@ -392,3 +395,19 @@ class FridgeFreezer(DeviceWithDoor, HomeConnectDevice):
         door_entity = self.get_door_entity()
         return {'binary_sensor': [door_entity],
                 }
+
+
+class Hob(DeviceWithPrograms, HomeConnectDevice):
+
+    _programs = [
+        {'name': 'Cooking.Hob.Program.PowerLevelMode',},
+    ]
+
+    def __init__(self, appliance):
+        super().__init__(appliance)
+
+    def get_entities(self):
+        program_sensors = self.get_program_sensors()
+        program_switches = self.get_program_switches()
+        return {'switch': program_switches,
+                'sensor': program_sensors,}
