@@ -40,6 +40,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Required('client_id'): cv.string,
         vol.Required('client_secret'): cv.string,
         vol.Optional('simulate', default=False): cv.boolean,
+        vol.Optional('callback_url', default='none'): cv.string,
     })
 }, extra=vol.ALLOW_EXTRA)
 
@@ -47,7 +48,11 @@ CONFIG_SCHEMA = vol.Schema({
 def setup(hass, config, add_entities=None):
     """Set up Home Connect component."""
     from homeconnect import HomeConnect
-    redirect_uri = '{}{}'.format(hass.config.api.base_url, AUTH_CALLBACK_PATH)
+    if config.get(DOMAIN, {}).get('callback_url', 'none') == 'none':
+     conf_callback = hass.config.api.base_url
+    else:
+     conf_callback = config.get(DOMAIN, {}).get('callback_url', 'none')
+    redirect_uri = '{}{}'.format(conf_callback, AUTH_CALLBACK_PATH)
 
     token_cache = hass.config.path(CACHE_PATH)
     hc = HomeConnect(client_id=config.get(DOMAIN, {}).get('client_id', ''),
@@ -340,6 +345,7 @@ class Washer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
 
     _programs = [
         {'name': 'LaundryCare.Washer.Program.Cotton',},
+        {'name': 'LaundryCare.Washer.Program.Cotton.CottonEco',},
         {'name': 'LaundryCare.Washer.Program.EasyCare',},
         {'name': 'LaundryCare.Washer.Program.Mix',},
         {'name': 'LaundryCare.Washer.Program.DelicatesSilk',},
