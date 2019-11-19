@@ -11,20 +11,19 @@ from custom_components.homeconnect import HomeConnectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ['homeconnect']
+DEPENDENCIES = ["homeconnect"]
 
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Home Connect sensor."""
     entities = []
-    for device_dict in hass.data[HOMECONNECT_DOMAIN]['devices']:
-        entity_dicts = device_dict.get('entities', {}).get('sensor', [])
+    for device_dict in hass.data[HOMECONNECT_DOMAIN]["devices"]:
+        entity_dicts = device_dict.get("entities", {}).get("sensor", [])
         entity_list = [HomeConnectSensor(**d) for d in entity_dicts]
-        device = device_dict['device']
+        device = device_dict["device"]
         device.entities += entity_list
         entities += entity_list
     add_entities(entities, True)
-
 
 
 class HomeConnectSensor(HomeConnectEntity):
@@ -48,8 +47,9 @@ class HomeConnectSensor(HomeConnectEntity):
         if self._key not in status:
             self._state = None
         else:
-            self._state = status[self._key].get('value', None)
+            self._state = status[self._key].get("value", None)
         _LOGGER.debug("Updated, new state: {}".format(self._state))
+
     #
     # @property
     # def device_class(self):
@@ -63,7 +63,7 @@ class HomeConnectSensor(HomeConnectEntity):
 
     @property
     def icon(self):
-        if self._unit == 's':
-            return 'mdi:progress-clock'
-        if self._unit == '%':
-            return 'mdi:timelapse'
+        if self._unit == "s":
+            return "mdi:progress-clock"
+        if self._unit == "%":
+            return "mdi:timelapse"

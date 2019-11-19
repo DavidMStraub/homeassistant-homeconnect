@@ -12,28 +12,25 @@ from custom_components.homeconnect import HomeConnectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ['homeconnect']
+DEPENDENCIES = ["homeconnect"]
 
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Home Connect binary sensor."""
     entities = []
-    for device_dict in hass.data[HOMECONNECT_DOMAIN]['devices']:
-        entities += [HomeConnectPowerSwitch(device_dict['device'])]
-        entity_dicts = device_dict.get('entities', {}).get('switch', [])
+    for device_dict in hass.data[HOMECONNECT_DOMAIN]["devices"]:
+        entities += [HomeConnectPowerSwitch(device_dict["device"])]
+        entity_dicts = device_dict.get("entities", {}).get("switch", [])
         entity_list = [HomeConnectProgramSwitch(**d) for d in entity_dicts]
-        device = device_dict['device']
+        device = device_dict["device"]
         device.entities += entity_list
         entities += entity_list
     add_entities(entities, True)
 
 
-
 class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
     def __init__(self, device, program_name):
-        name = ' '.join([device.appliance.name,
-                         'Program',
-                         program_name.split('.')[-1]])
+        name = " ".join([device.appliance.name, "Program", program_name.split(".")[-1]])
         super().__init__(device, name)
         self.program_name = program_name
         self._state = None
@@ -42,7 +39,7 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
     @property
     def is_on(self):
         """Return true if the switch is on."""
-        return bool(self._state )
+        return bool(self._state)
 
     @property
     def available(self):
@@ -65,8 +62,8 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
         #     self._remote_allowed = True
         # else:
         #     self._remote_allowed = False
-        state = self.device.appliance.status.get('BSH.Common.Root.ActiveProgram', {})
-        if state.get('value', None) == self.program_name:
+        state = self.device.appliance.status.get("BSH.Common.Root.ActiveProgram", {})
+        if state.get("value", None) == self.program_name:
             self._state = True
         else:
             self._state = False
@@ -81,33 +78,54 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
     @property
     def is_on(self):
         """Return true if the switch is on."""
-        return bool(self._state )
+        return bool(self._state)
 
     def turn_on(self, **kwargs):
         """Switch the device on."""
         _LOGGER.debug("tried to switch on {}".format(self.name))
-        self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  'BSH.Common.EnumType.PowerState.On')
+        self.device.appliance.set_setting(
+            "BSH.Common.Setting.PowerState", "BSH.Common.EnumType.PowerState.On"
+        )
 
     def turn_off(self, **kwargs):
         """Switch the device off."""
         _LOGGER.debug("tried to switch off {}".format(self.name))
-        self.device.appliance.set_setting('BSH.Common.Setting.PowerState',  self.device._power_off_state)
+        self.device.appliance.set_setting(
+            "BSH.Common.Setting.PowerState", self.device._power_off_state
+        )
 
     def update(self):
-        if self.device.appliance.status.get('BSH.Common.Setting.PowerState', {}).get('value', None) == 'BSH.Common.EnumType.PowerState.On':
+        if (
+            self.device.appliance.status.get("BSH.Common.Setting.PowerState", {}).get(
+                "value", None
+            )
+            == "BSH.Common.EnumType.PowerState.On"
+        ):
             self._state = True
-        if self.device.appliance.status.get('BSH.Common.Setting.PowerState', {}).get('value', None) == 'BSH.Common.EnumType.PowerState.Off':
+        if (
+            self.device.appliance.status.get("BSH.Common.Setting.PowerState", {}).get(
+                "value", None
+            )
+            == "BSH.Common.EnumType.PowerState.Off"
+        ):
             self._state = False
-        elif self.device.appliance.status.get('BSH.Common.Status.OperationState', {}).get('value', None) in [
-            'BSH.Common.EnumType.OperationState.Ready',
-            'BSH.Common.EnumType.OperationState.DelayedStart',
-            'BSH.Common.EnumType.OperationState.Run',
-            'BSH.Common.EnumType.OperationState.Pause',
-            'BSH.Common.EnumType.OperationState.ActionRequired',
-            'BSH.Common.EnumType.OperationState.Aborting',
+        elif self.device.appliance.status.get(
+            "BSH.Common.Status.OperationState", {}
+        ).get("value", None) in [
+            "BSH.Common.EnumType.OperationState.Ready",
+            "BSH.Common.EnumType.OperationState.DelayedStart",
+            "BSH.Common.EnumType.OperationState.Run",
+            "BSH.Common.EnumType.OperationState.Pause",
+            "BSH.Common.EnumType.OperationState.ActionRequired",
+            "BSH.Common.EnumType.OperationState.Aborting",
         ]:
             self._state = True
-        elif self.device.appliance.status.get('BSH.Common.Status.OperationState', {}).get('value', None) == 'BSH.Common.EnumType.OperationState.Inactive':
+        elif (
+            self.device.appliance.status.get(
+                "BSH.Common.Status.OperationState", {}
+            ).get("value", None)
+            == "BSH.Common.EnumType.OperationState.Inactive"
+        ):
             self._state = False
         else:
             self._state = None
