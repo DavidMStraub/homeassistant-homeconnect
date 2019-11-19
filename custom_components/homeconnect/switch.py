@@ -5,6 +5,7 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.homeconnect/
 """
 import logging
+import re
 
 from custom_components.homeconnect import DOMAIN as HOMECONNECT_DOMAIN
 from custom_components.homeconnect import HomeConnectEntity
@@ -56,7 +57,6 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
             _LOGGER.error("Error while trying to start program: {}".format(err))
         self.async_entity_update()
 
-
     def turn_off(self, **kwargs):
         """Stop the program."""
         _LOGGER.debug("tried to stop program {}".format(self.program_name))
@@ -78,6 +78,21 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
         else:
             self._state = False
         _LOGGER.debug("Updated, new state: {}".format(self._state))
+
+
+def convert_to_snake(s):
+    """Convert from CamelCase to snake_case.
+    
+    Taken from https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case"""
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+
+def format_key(s):
+    """Format Home Connect keys like `BSH.Something.SomeValue` to a simple `some_value`"""
+    if not isinstance(s, str):
+        return s
+    return convert_to_snake(s.split(".")[-1])
 
 
 class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
@@ -161,3 +176,9 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
         else:
             self._state = None
         _LOGGER.debug("Updated, new state: {}".format(self._state))
+
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes."""
+        status = self.device.appliance.status
+        return {format_key(k): format_key(v.get("value")) for k, v in status.items()}
