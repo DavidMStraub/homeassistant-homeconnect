@@ -6,7 +6,7 @@ This is work in progress of an implementation of a Home Connect component for Ho
 
 Note that the current version **requires Home Assistant 0.102 or newer**.
 
-Also, you need to change the redirect URI compared to before: replace `.../api/homeconnect` by `.../auth/external/callback`
+Also, you need to **change the redirect URI** compared to before: replace `.../api/homeconnect` by `.../auth/external/callback`
 
 ## Usage
 
