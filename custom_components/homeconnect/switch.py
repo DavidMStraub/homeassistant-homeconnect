@@ -6,9 +6,10 @@ https://home-assistant.io/components/binary_sensor.homeconnect/
 """
 import logging
 
-from homeassistant.components.switch import SwitchDevice
 from custom_components.homeconnect import DOMAIN as HOMECONNECT_DOMAIN
 from custom_components.homeconnect import HomeConnectEntity
+from homeassistant.components.switch import SwitchDevice
+from homeconnect.api import HomeConnectError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,6 +87,11 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
         self.device.appliance.set_setting(
             "BSH.Common.Setting.PowerState", "BSH.Common.EnumType.PowerState.On"
         )
+        try:
+            self.appliance.get_status()
+        except (HomeConnectError, ValueError):
+            _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
+            self._state = False
 
     def turn_off(self, **kwargs):
         """Switch the device off."""
@@ -93,6 +99,11 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
         self.device.appliance.set_setting(
             "BSH.Common.Setting.PowerState", self.device._power_off_state
         )
+        try:
+            self.appliance.get_status()
+        except (HomeConnectError, ValueError):
+            _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
+            self._state = False
 
     def update(self):
         if (
