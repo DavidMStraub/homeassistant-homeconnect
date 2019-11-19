@@ -2,7 +2,14 @@
   "domain": "homeconnect",
   "name": "Home Connect",
   "documentation": "https://github.com/DavidMStraub/homeassistant-homeconnect",
-  "dependencies": [],
-  "codeowners": ["@DavidMStraub"],
-  "requirements": ["homeconnect==0.2.2"]
+  "ssdp": {},
+  "homekit": {},
+  "dependencies": ["http"],
+  "codeowners": [
+    "@DavidMStraub"
+  ],
+  "requirements": [
+    "homeconnect==0.3.1"
+  ],
+  "config_flow": true
 }

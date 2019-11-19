@@ -6,24 +6,26 @@ https://home-assistant.io/components/binary_sensor.homeconnect/
 """
 import logging
 
-from custom_components.homeconnect import DOMAIN as HOMECONNECT_DOMAIN
-from custom_components.homeconnect import HomeConnectEntity
+from .api import HomeConnectEntity
+from .const import DOMAIN, DEVICES
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ["homeconnect"]
 
-
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Home Connect sensor."""
-    entities = []
-    for device_dict in hass.data[HOMECONNECT_DOMAIN]["devices"]:
-        entity_dicts = device_dict.get("entities", {}).get("sensor", [])
-        entity_list = [HomeConnectSensor(**d) for d in entity_dicts]
-        device = device_dict["device"]
-        device.entities += entity_list
-        entities += entity_list
-    add_entities(entities, True)
+
+    def get_entities():
+        entities = []
+        for device_dict in hass.data[DOMAIN][DEVICES]:
+            entity_dicts = device_dict.get("entities", {}).get("sensor", [])
+            entity_list = [HomeConnectSensor(**d) for d in entity_dicts]
+            device = device_dict["device"]
+            device.entities += entity_list
+            entities += entity_list
+        return entities
+
+    async_add_entities(await hass.async_add_executor_job(get_entities), True)
 
 
 class HomeConnectSensor(HomeConnectEntity):
