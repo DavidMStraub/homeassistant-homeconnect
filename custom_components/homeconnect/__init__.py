@@ -231,7 +231,12 @@ class DeviceWithPrograms:
         return [{"device": self, "program_name": p["name"]} for p in programs]
 
     def get_program_sensors(self):
-        sensors = {"Remaining Program Time": "s", "Program Progress": "%"}
+        sensors = {
+            "Remaining Program Time": "s",
+            "Elapsed Program Time": "s",
+            "Duration": "s",
+            "Program Progress": "%",
+        }
         return [
             {
                 "device": self,
