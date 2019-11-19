@@ -50,12 +50,21 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
     def turn_on(self, **kwargs):
         """Start the program."""
         _LOGGER.debug("tried to turn on program {}".format(self.program_name))
-        self.device.appliance.start_program(self.program_name)
+        try:
+            self.device.appliance.start_program(self.program_name)
+        except HomeConnectError as err:
+            _LOGGER.error("Error while trying to start program: {}".format(err))
+        self.async_entity_update()
+
 
     def turn_off(self, **kwargs):
         """Stop the program."""
         _LOGGER.debug("tried to stop program {}".format(self.program_name))
-        self.device.appliance.stop_program()
+        try:
+            self.device.appliance.stop_program()
+        except HomeConnectError as err:
+            _LOGGER.error("Error while trying to stop program: {}".format(err))
+        self.async_entity_update()
 
     def update(self):
         # remote = self.device.appliance.status.get('BSH.Common.Status.RemoteControlStartAllowed', {})
@@ -84,26 +93,36 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
     def turn_on(self, **kwargs):
         """Switch the device on."""
         _LOGGER.debug("tried to switch on {}".format(self.name))
-        self.device.appliance.set_setting(
-            "BSH.Common.Setting.PowerState", "BSH.Common.EnumType.PowerState.On"
-        )
         try:
-            self.appliance.get_status()
+            self.device.appliance.set_setting(
+                "BSH.Common.Setting.PowerState", "BSH.Common.EnumType.PowerState.On"
+            )
+        except HomeConnectError as err:
+            _LOGGER.error("Error while trying to turn on device: {}".format(err))
+            self._state = False
+        try:
+            self.device.appliance.get_status()
         except (HomeConnectError, ValueError):
             _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
             self._state = False
+        self.async_entity_update()
 
     def turn_off(self, **kwargs):
         """Switch the device off."""
         _LOGGER.debug("tried to switch off {}".format(self.name))
-        self.device.appliance.set_setting(
-            "BSH.Common.Setting.PowerState", self.device._power_off_state
-        )
         try:
-            self.appliance.get_status()
+            self.device.appliance.set_setting(
+                "BSH.Common.Setting.PowerState", self.device._power_off_state
+            )
+        except HomeConnectError as err:
+            _LOGGER.error("Error while trying to turn on device: {}".format(err))
+            self._state = False
+        try:
+            self.device.appliance.get_status()
         except (HomeConnectError, ValueError):
             _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
             self._state = False
+        self.async_entity_update()
 
     def update(self):
         if (

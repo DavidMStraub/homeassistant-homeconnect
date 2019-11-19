@@ -213,7 +213,7 @@ class HomeConnectEntity(Entity):
     @callback
     def async_entity_update(self):
         _LOGGER.debug("Entity update triggered on {}".format(self))
-        self.schedule_update_ha_state(True)
+        self.async_schedule_update_ha_state(True)
 
 
 class DeviceWithPrograms:
