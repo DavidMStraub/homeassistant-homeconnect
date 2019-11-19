@@ -4,5 +4,5 @@
   "documentation": "https://github.com/DavidMStraub/homeassistant-homeconnect",
   "dependencies": [],
   "codeowners": ["@DavidMStraub"],
-  "requirements": ["homeconnect==0.2.1"]
+  "requirements": ["homeconnect==0.2.2"]
 }
