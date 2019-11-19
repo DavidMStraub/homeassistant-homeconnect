@@ -11,5 +11,6 @@
   "requirements": [
     "homeconnect==0.3.1"
   ],
-  "config_flow": true
+  "config_flow": true,
+  "homeassistant": "0.102.0"
 }
