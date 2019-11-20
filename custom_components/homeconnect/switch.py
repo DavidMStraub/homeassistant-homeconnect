@@ -23,7 +23,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     def get_entities():
         entities = []
-        for device_dict in hass.data[DOMAIN][DEVICES]:
+        data = hass.data[DOMAIN]
+        for device_dict in data.get(DEVICES, []):
             entities += [HomeConnectPowerSwitch(device_dict["device"])]
             entity_dicts = device_dict.get("entities", {}).get("switch", [])
             entity_list = [HomeConnectProgramSwitch(**d) for d in entity_dicts]
