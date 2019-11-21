@@ -11,7 +11,10 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.core import callback
 
 
+from .const import DOMAIN
+
 _LOGGER = logging.getLogger(__name__)
+
 
 class ConfigEntryAuth(homeconnect.HomeConnectAPI):
     """Provide Home Connect authentication tied to an OAuth2 based config entry."""
@@ -65,7 +68,6 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
         return devices
 
 
-
 class HomeConnectDevice:
 
     # for some devices, this is instead 'BSH.Common.EnumType.PowerState.Standby'
@@ -114,6 +116,20 @@ class HomeConnectEntity(Entity):
     def name(self):
         """Return the name of the node (used for Entity_ID)."""
         return self._name
+
+    @property
+    def unique_id(self):
+        """Return the unique id base on the id returned by Home Connect and the entity name."""
+        return f"{self.device.appliance.haId}-{self.name}"
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self.device.appliance.haId)},
+            "name": self.device.appliance.name,
+            "manufacturer": self.device.appliance.brand,
+            "model": self.device.appliance.vib,
+        }
 
     @callback
     def async_entity_update(self):
