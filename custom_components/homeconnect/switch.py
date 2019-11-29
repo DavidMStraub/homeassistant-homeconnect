@@ -125,11 +125,6 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
         except HomeConnectError as err:
             _LOGGER.error("Error while trying to turn on device: %s", err)
             self._state = False
-        try:
-            self.device.appliance.get_status()
-        except (HomeConnectError, ValueError):
-            _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
-            self._state = False
         self.async_entity_update()
 
     def turn_off(self, **kwargs):
@@ -141,12 +136,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
             )
         except HomeConnectError as err:
             _LOGGER.error("Error while trying to turn off device: %s", err)
-            self._state = False
-        try:
-            self.device.appliance.get_status()
-        except (HomeConnectError, ValueError):
-            _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
-            self._state = False
+            self._state = True
         self.async_entity_update()
 
     def update(self):
@@ -162,7 +152,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
             self.device.appliance.status.get("BSH.Common.Setting.PowerState", {}).get(
                 "value", None
             )
-            == "BSH.Common.EnumType.PowerState.Off"
+            == self.device.power_off_state
         ):
             self._state = False
         elif self.device.appliance.status.get(
