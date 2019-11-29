@@ -1,5 +1,4 @@
-"""
-Provides a binary sensor for Home Connect
+"""Provides a binary sensor for Home Connect.
 
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.homeconnect/
@@ -9,7 +8,7 @@ import logging
 from homeassistant.components.binary_sensor import BinarySensorDevice
 
 from .api import HomeConnectEntity
-from .const import DOMAIN, DEVICES
+from .const import DEVICES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,8 +29,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     async_add_entities(await hass.async_add_executor_job(get_entities), True)
 
+
 class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
+    """Binary sensor for Home Connect."""
+
     def __init__(self, device, name, device_class):
+        """Initialize the entitiy."""
         super().__init__(device, name)
         self._device_class = device_class
         self._state = None
@@ -43,9 +46,11 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
 
     @property
     def available(self):
+        """Return true if the binary sensor is available."""
         return self._state is not None
 
     def update(self):
+        """Update the binary sensor's status."""
         state = self.device.appliance.status.get("BSH.Common.Status.DoorState", {})
         if not state:
             self._state = None
@@ -57,11 +62,9 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
         elif state.get("value", None) == "BSH.Common.EnumType.DoorState.Open":
             self._state = True
         else:
-            _LOGGER.warning(
-                "Unexpected value for HomeConnect door state: {}".format(state)
-            )
+            _LOGGER.warning("Unexpected value for HomeConnect door state: %s", state)
             self._state = None
-        _LOGGER.debug("Updated, new state: {}".format(self._state))
+        _LOGGER.debug("Updated, new state: %s", self._state)
 
     @property
     def device_class(self):

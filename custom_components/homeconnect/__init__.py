@@ -5,19 +5,22 @@ For more details about this component, please refer to the documentation at
 https://home-assistant.io/components/homeconnect/
 """
 import asyncio
+from datetime import timedelta
 import logging
 import os
 import time
-from datetime import timedelta
 
-import voluptuous as vol
 from requests import HTTPError
+import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import (
+    aiohttp_client,
+    config_entry_oauth2_flow,
+    config_validation as cv,
+)
 from homeassistant.helpers.discovery import load_platform
 from homeassistant.util import Throttle
 

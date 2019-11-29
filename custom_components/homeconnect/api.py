@@ -1,15 +1,14 @@
 """API for Home Connect bound to HASS OAuth."""
-import logging
-from asyncio import run_coroutine_threadsafe
 
-from aiohttp import ClientSession
+from asyncio import run_coroutine_threadsafe
+import logging
 
 import homeconnect
+
 from homeassistant import config_entries, core
+from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.entity import Entity
-from homeassistant.core import callback
-
 
 from .const import DOMAIN
 
@@ -42,6 +41,7 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
         return self.session.token
 
     def get_devices(self):
+        """Get a dictionary of devices."""
         appl = self.get_appliances()
         devices = []
         for app in appl:
@@ -62,19 +62,21 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
             elif app.type == "Hob":
                 device = Hob(app)
             else:
-                _LOGGER.warning("Appliance type {} not implemented.".format(app.type))
+                _LOGGER.warning("Appliance type %s not implemented.", app.type)
                 continue
             devices.append({"device": device, "entities": device.get_entities()})
         return devices
 
 
 class HomeConnectDevice:
+    """Generic Home Connect device."""
 
     # for some devices, this is instead 'BSH.Common.EnumType.PowerState.Standby'
     # see https://developer.home-connect.com/docs/settings/power_state
-    _power_off_state = "BSH.Common.EnumType.PowerState.Off"
+    power_off_state = "BSH.Common.EnumType.PowerState.Off"
 
     def __init__(self, appliance):
+        """Initialize the device."""
         from homeconnect.api import HomeConnectError
 
         self.appliance = appliance
@@ -95,7 +97,8 @@ class HomeConnectDevice:
         self.entities = []
 
     def event_callback(self, appliance):
-        _LOGGER.debug("Update triggered on {}".format(appliance.name))
+        """Handle event."""
+        _LOGGER.debug("Update triggered on %s", appliance.name)
         _LOGGER.debug(self.entities)
         _LOGGER.debug(self.appliance.status)
         for entity in self.entities:
@@ -103,7 +106,10 @@ class HomeConnectDevice:
 
 
 class HomeConnectEntity(Entity):
+    """Generic Home Connect entity (base class)."""
+
     def __init__(self, device, name):
+        """Initialize the entity."""
         self.device = device
         self._name = name
 
@@ -124,6 +130,7 @@ class HomeConnectEntity(Entity):
 
     @property
     def device_info(self):
+        """Return info about the device."""
         return {
             "identifiers": {(DOMAIN, self.device.appliance.haId)},
             "name": self.device.appliance.name,
@@ -133,25 +140,27 @@ class HomeConnectEntity(Entity):
 
     @callback
     def async_entity_update(self):
-        _LOGGER.debug("Entity update triggered on {}".format(self))
+        """Update the entity."""
+        _LOGGER.debug("Entity update triggered on %s", self)
         self.async_schedule_update_ha_state(True)
 
 
-class DeviceWithPrograms:
+class DeviceWithPrograms(HomeConnectDevice):
+    """Device with programs."""
 
     _programs = []
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def get_programs_available(self):
+        """Get the available programs."""
         return self._programs
 
     def get_program_switches(self):
+        """Get a dictionary with info about program switches."""
         programs = self.get_programs_available()
         return [{"device": self, "program_name": p["name"]} for p in programs]
 
     def get_program_sensors(self):
+        """Get a dictionary with info about program sensors."""
         sensors = {
             "Remaining Program Time": "s",
             "Elapsed Program Time": "s",
@@ -169,11 +178,11 @@ class DeviceWithPrograms:
         ]
 
 
-class DeviceWithDoor:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class DeviceWithDoor(HomeConnectDevice):
+    """Device that has a door sensor."""
 
     def get_door_entity(self):
+        """Get a dictionary with info about the door binary sensor."""
         return {
             "device": self,
             "name": self.appliance.name + " Door",
@@ -181,7 +190,8 @@ class DeviceWithDoor:
         }
 
 
-class Dryer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
+class Dryer(DeviceWithDoor, DeviceWithPrograms):
+    """Dryer class."""
 
     _programs = [
         {"name": "LaundryCare.Dryer.Program.Cotton"},
@@ -202,10 +212,8 @@ class Dryer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         {"name": "LaundryCare.Dryer.Program.AntiShrink"},
     ]
 
-    def __init__(self, appliance):
-        super().__init__(appliance)
-
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
@@ -216,7 +224,8 @@ class Dryer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         }
 
 
-class Dishwasher(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
+class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
+    """Dishwasher class."""
 
     _programs = [
         {"name": "Dishcare.Dishwasher.Program.Auto1"},
@@ -243,10 +252,8 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         {"name": "Dishcare.Dishwasher.Program.MaximumCleaning"},
     ]
 
-    def __init__(self, appliance):
-        super().__init__(appliance)
-
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
@@ -257,7 +264,8 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         }
 
 
-class Oven(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
+class Oven(DeviceWithDoor, DeviceWithPrograms):
+    """Oven class."""
 
     _programs = [
         {"name": "Cooking.Oven.Program.HeatingMode.PreHeating"},
@@ -267,12 +275,10 @@ class Oven(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         {"name": "Cooking.Oven.Program.Microwave.600Watt"},
     ]
 
-    _power_off_state = "BSH.Common.EnumType.PowerState.Standby"
-
-    def __init__(self, appliance):
-        super().__init__(appliance)
+    power_off_state = "BSH.Common.EnumType.PowerState.Standby"
 
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
@@ -283,7 +289,8 @@ class Oven(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         }
 
 
-class Washer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
+class Washer(DeviceWithDoor, DeviceWithPrograms):
+    """Washer class."""
 
     _programs = [
         {"name": "LaundryCare.Washer.Program.Cotton"},
@@ -309,10 +316,8 @@ class Washer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         {"name": "LaundryCare.Washer.Program.WaterProof"},
     ]
 
-    def __init__(self, appliance):
-        super().__init__(appliance)
-
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
@@ -323,7 +328,8 @@ class Washer(DeviceWithDoor, DeviceWithPrograms, HomeConnectDevice):
         }
 
 
-class CoffeeMaker(DeviceWithPrograms, HomeConnectDevice):
+class CoffeeMaker(DeviceWithPrograms):
+    """Coffee maker class."""
 
     _programs = [
         {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.Espresso"},
@@ -334,18 +340,17 @@ class CoffeeMaker(DeviceWithPrograms, HomeConnectDevice):
         {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.CaffeLatte"},
     ]
 
-    _power_off_state = "BSH.Common.EnumType.PowerState.Standby"
-
-    def __init__(self, appliance):
-        super().__init__(appliance)
+    power_off_state = "BSH.Common.EnumType.PowerState.Standby"
 
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
         return {"switch": program_switches, "sensor": program_sensors}
 
 
-class Hood(DeviceWithPrograms, HomeConnectDevice):
+class Hood(DeviceWithPrograms):
+    """Hood class."""
 
     _programs = [
         {"name": "Cooking.Common.Program.Hood.Automatic"},
@@ -353,32 +358,29 @@ class Hood(DeviceWithPrograms, HomeConnectDevice):
         {"name": "Cooking.Common.Program.Hood.DelayedShutOff"},
     ]
 
-    def __init__(self, appliance):
-        super().__init__(appliance)
-
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
         return {"switch": program_switches, "sensor": program_sensors}
 
 
-class FridgeFreezer(DeviceWithDoor, HomeConnectDevice):
-    def __init__(self, appliance):
-        super().__init__(appliance)
+class FridgeFreezer(DeviceWithDoor):
+    """Fridge/Freezer class."""
 
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
         return {"binary_sensor": [door_entity]}
 
 
-class Hob(DeviceWithPrograms, HomeConnectDevice):
+class Hob(DeviceWithPrograms):
+    """Hob class."""
 
     _programs = [{"name": "Cooking.Hob.Program.PowerLevelMode"}]
 
-    def __init__(self, appliance):
-        super().__init__(appliance)
-
     def get_entities(self):
+        """Get a dictionary with infos about the associated entities."""
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
         return {"switch": program_switches, "sensor": program_sensors}

@@ -1,17 +1,17 @@
-"""
-Provides a binary sensor for Home Connect
+"""Provides a switch for Home Connect.
 
 For more details about this platform, please refer to the documentation at
-https://home-assistant.io/components/binary_sensor.homeconnect/
+https://home-assistant.io/components/switch.homeconnect/
 """
 import logging
 import re
 
-from homeassistant.components.switch import SwitchDevice
 from homeconnect.api import HomeConnectError
 
+from homeassistant.components.switch import SwitchDevice
+
 from .api import HomeConnectEntity
-from .const import DOMAIN, DEVICES
+from .const import DEVICES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Home Connect switch."""
 
     def get_entities():
+        """Get a list of entities."""
         entities = []
         data = hass.data[DOMAIN]
         for device_dict in data.get(DEVICES, []):
@@ -37,7 +38,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 
 class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
+    """Switch class for Home Connect."""
+
     def __init__(self, device, program_name):
+        """Initialize the entitiy."""
         name = " ".join([device.appliance.name, "Program", program_name.split(".")[-1]])
         super().__init__(device, name)
         self.program_name = program_name
@@ -51,58 +55,58 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
 
     @property
     def available(self):
-        # return self._remote_allowed
+        """Return true if the entity is available."""
         return True
 
     def turn_on(self, **kwargs):
         """Start the program."""
-        _LOGGER.debug("tried to turn on program {}".format(self.program_name))
+        _LOGGER.debug("tried to turn on program %s", self.program_name)
         try:
             self.device.appliance.start_program(self.program_name)
         except HomeConnectError as err:
-            _LOGGER.error("Error while trying to start program: {}".format(err))
+            _LOGGER.error("Error while trying to start program: %s", err)
         self.async_entity_update()
 
     def turn_off(self, **kwargs):
         """Stop the program."""
-        _LOGGER.debug("tried to stop program {}".format(self.program_name))
+        _LOGGER.debug("tried to stop program %s", self.program_name)
         try:
             self.device.appliance.stop_program()
         except HomeConnectError as err:
-            _LOGGER.error("Error while trying to stop program: {}".format(err))
+            _LOGGER.error("Error while trying to stop program: %s", err)
         self.async_entity_update()
 
     def update(self):
-        # remote = self.device.appliance.status.get('BSH.Common.Status.RemoteControlStartAllowed', {})
-        # if remote.get('value', None):
-        #     self._remote_allowed = True
-        # else:
-        #     self._remote_allowed = False
+        """Update the switch's status."""
         state = self.device.appliance.status.get("BSH.Common.Root.ActiveProgram", {})
         if state.get("value", None) == self.program_name:
             self._state = True
         else:
             self._state = False
-        _LOGGER.debug("Updated, new state: {}".format(self._state))
+        _LOGGER.debug("Updated, new state: %s", self._state)
 
 
-def convert_to_snake(s):
+def convert_to_snake(camel):
     """Convert from CamelCase to snake_case.
-    
-    Taken from https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case"""
-    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
-    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+    Taken from https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    """
+    snake = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", camel)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
 
 
-def format_key(s):
-    """Format Home Connect keys like `BSH.Something.SomeValue` to a simple `some_value`"""
-    if not isinstance(s, str):
-        return s
-    return convert_to_snake(s.split(".")[-1])
+def format_key(key):
+    """Format Home Connect keys like `BSH.Something.SomeValue` to a simple `some_value`."""
+    if not isinstance(key, str):
+        return key
+    return convert_to_snake(key.split(".")[-1])
 
 
 class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
+    """Power switch class for Home Connect."""
+
     def __init__(self, device):
+        """Inititialize the entity."""
         super().__init__(device, device.appliance.name)
         self._state = None
 
@@ -113,13 +117,13 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
 
     def turn_on(self, **kwargs):
         """Switch the device on."""
-        _LOGGER.debug("tried to switch on {}".format(self.name))
+        _LOGGER.debug("tried to switch on %s", self.name)
         try:
             self.device.appliance.set_setting(
                 "BSH.Common.Setting.PowerState", "BSH.Common.EnumType.PowerState.On"
             )
         except HomeConnectError as err:
-            _LOGGER.error("Error while trying to turn on device: {}".format(err))
+            _LOGGER.error("Error while trying to turn on device: %s", err)
             self._state = False
         try:
             self.device.appliance.get_status()
@@ -130,13 +134,13 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
 
     def turn_off(self, **kwargs):
         """Switch the device off."""
-        _LOGGER.debug("tried to switch off {}".format(self.name))
+        _LOGGER.debug("tried to switch off %s", self.name)
         try:
             self.device.appliance.set_setting(
-                "BSH.Common.Setting.PowerState", self.device._power_off_state
+                "BSH.Common.Setting.PowerState", self.device.power_off_state
             )
         except HomeConnectError as err:
-            _LOGGER.error("Error while trying to turn on device: {}".format(err))
+            _LOGGER.error("Error while trying to turn on device: %s", err)
             self._state = False
         try:
             self.device.appliance.get_status()
@@ -146,6 +150,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
         self.async_entity_update()
 
     def update(self):
+        """Update the switch's status."""
         if (
             self.device.appliance.status.get("BSH.Common.Setting.PowerState", {}).get(
                 "value", None
@@ -181,7 +186,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
             self._state = False
         else:
             self._state = None
-        _LOGGER.debug("Updated, new state: {}".format(self._state))
+        _LOGGER.debug("Updated, new state: %s", self._state)
 
     @property
     def device_state_attributes(self):
