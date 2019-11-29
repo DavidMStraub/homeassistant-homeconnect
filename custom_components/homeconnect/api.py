@@ -85,6 +85,10 @@ class HomeConnectDevice:
         except (HomeConnectError, ValueError):
             _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
         try:
+            self.appliance.get_settings()
+        except (HomeConnectError, ValueError):
+            _LOGGER.debug("Unable to fetch settings. Probably offline.")
+        try:
             program_active = self.appliance.get_programs_active()
         except (HomeConnectError, ValueError):
             _LOGGER.debug("Unable to fetch active programs. Probably offline.")
