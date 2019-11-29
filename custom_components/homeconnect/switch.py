@@ -140,7 +140,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
                 "BSH.Common.Setting.PowerState", self.device.power_off_state
             )
         except HomeConnectError as err:
-            _LOGGER.error("Error while trying to turn on device: %s", err)
+            _LOGGER.error("Error while trying to turn off device: %s", err)
             self._state = False
         try:
             self.device.appliance.get_status()
