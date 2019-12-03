@@ -2,13 +2,12 @@
 Support for BSH Home Connect appliances.
 
 For more details about this component, please refer to the documentation at
-https://home-assistant.io/components/homeconnect/
+https://home-assistant.io/integrations/homeconnect/
 """
 import asyncio
 from datetime import timedelta
 import logging
 import os
-import time
 
 from requests import HTTPError
 import voluptuous as vol
@@ -17,11 +16,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import (
-    aiohttp_client,
     config_entry_oauth2_flow,
     config_validation as cv,
 )
-from homeassistant.helpers.discovery import load_platform
 from homeassistant.util import Throttle
 
 from . import api, config_flow
@@ -76,9 +73,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass, entry
     )
 
-    hc = api.ConfigEntryAuth(hass, entry, implementation)
+    hc_api = api.ConfigEntryAuth(hass, entry, implementation)
 
-    hass.data[DOMAIN][entry.entry_id] = hc
+    hass.data[DOMAIN][entry.entry_id] = hc_api
 
     await update_all_devices(hass, entry)
 
@@ -109,9 +106,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 @Throttle(SCAN_INTERVAL)
 async def update_all_devices(hass, entry):
     """Update all the devices."""
+    data = hass.data[DOMAIN]
+    hc_api = data[entry.entry_id]
     try:
-        data = hass.data[DOMAIN]
-        hc = data[entry.entry_id]
-        data[DEVICES] = await hass.async_add_executor_job(hc.get_devices)
+        data[DEVICES] = await hass.async_add_executor_job(hc_api.get_devices)
     except HTTPError as err:
         _LOGGER.warning("Cannot update devices: %s", err.response.status_code)
