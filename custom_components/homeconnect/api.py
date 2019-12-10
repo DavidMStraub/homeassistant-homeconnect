@@ -4,6 +4,7 @@ from asyncio import run_coroutine_threadsafe
 import logging
 
 import homeconnect
+from homeconnect.api import HomeConnectError
 
 from homeassistant import config_entries, core
 from homeassistant.core import callback
@@ -31,6 +32,7 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
             hass, config_entry, implementation
         )
         super().__init__(self.session.token)
+        self.devices = []
 
     def refresh_tokens(self) -> dict:
         """Refresh and return new Home Connect tokens using Home Assistant OAuth2 session."""
@@ -65,6 +67,7 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
                 _LOGGER.warning("Appliance type %s not implemented.", app.type)
                 continue
             devices.append({"device": device, "entities": device.get_entities()})
+        self.devices = devices
         return devices
 
 
@@ -77,8 +80,6 @@ class HomeConnectDevice:
 
     def __init__(self, appliance):
         """Initialize the device."""
-        from homeconnect.api import HomeConnectError
-
         self.appliance = appliance
         try:
             self.appliance.get_status()
@@ -159,12 +160,19 @@ class DeviceWithPrograms(HomeConnectDevice):
         return self._programs
 
     def get_program_switches(self):
-        """Get a dictionary with info about program switches."""
+        """Get a dictionary with info about program switches.
+
+        There will be one switch for each program.
+        """
         programs = self.get_programs_available()
         return [{"device": self, "program_name": p["name"]} for p in programs]
 
     def get_program_sensors(self):
-        """Get a dictionary with info about program sensors."""
+        """Get a dictionary with info about program sensors.
+
+        There will be one of the four types of sensors or each
+        device.
+        """
         sensors = {
             "Remaining Program Time": "s",
             "Elapsed Program Time": "s",
