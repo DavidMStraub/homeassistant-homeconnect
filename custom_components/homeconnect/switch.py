@@ -82,7 +82,7 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
             self._state = True
         else:
             self._state = False
-        _LOGGER.debug("Updated, new state: %s", self._state)
+        _LOGGER.debug("Switch {} updated, new state: {}".format(self._name, self._state))
 
 
 def convert_to_snake(camel):
@@ -175,7 +175,7 @@ class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
             self._state = False
         else:
             self._state = None
-        _LOGGER.debug("Updated, new state: %s", self._state)
+        _LOGGER.debug("Switch {} updated, new state: {}".format(self._name, self._state))
 
     @property
     def device_state_attributes(self):

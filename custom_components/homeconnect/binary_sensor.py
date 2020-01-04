@@ -5,7 +5,7 @@ https://home-assistant.io/integrations/binary_sensor.homeconnect/
 """
 import logging
 
-from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.components.binary_sensor import BinarySensorDevice, DEVICE_CLASS_DOOR
 
 from .api import HomeConnectEntity
 from .const import DOMAIN
@@ -33,11 +33,22 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
     """Binary sensor for Home Connect."""
 
-    def __init__(self, device, name, device_class):
+    _OFF_STATES = [
+                "BSH.Common.EnumType.DoorState.Closed",
+                "BSH.Common.EnumType.DoorState.Locked",
+            ]
+    
+    _ON_STATES = [
+                "BSH.Common.EnumType.DoorState.Open",
+            ]
+
+
+    def __init__(self, device, name, key, device_class = None):
         """Initialize the entitiy."""
         super().__init__(device, name)
         self._device_class = device_class
         self._state = None
+        self._key = key
 
     @property
     def is_on(self):
@@ -51,20 +62,19 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
 
     def update(self):
         """Update the binary sensor's status."""
-        state = self.device.appliance.status.get("BSH.Common.Status.DoorState", {})
+        state = self.device.appliance.status.get(self._key, {})
         if not state:
             self._state = None
-        elif state.get("value", None) in [
-            "BSH.Common.EnumType.DoorState.Closed",
-            "BSH.Common.EnumType.DoorState.Locked",
-        ]:
+        elif isinstance(state.get("value", None), bool):
+            self._state = state.get("value", None)
+        elif state.get("value", None) in self._OFF_STATES:
             self._state = False
-        elif state.get("value", None) == "BSH.Common.EnumType.DoorState.Open":
+        elif state.get("value", None) in self._ON_STATES:
             self._state = True
         else:
             _LOGGER.warning("Unexpected value for HomeConnect door state: %s", state)
             self._state = None
-        _LOGGER.debug("Updated, new state: %s", self._state)
+        _LOGGER.debug("Binary Sensor {} updated, new state: {}".format(self._name, self._state))
 
     @property
     def device_class(self):

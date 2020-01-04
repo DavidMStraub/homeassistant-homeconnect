@@ -7,6 +7,8 @@ import logging
 
 from .api import HomeConnectEntity
 from .const import DOMAIN
+from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE
+from homeassistant.const import TEMP_CELSIUS, TEMP_FAHRENHEIT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,10 +34,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HomeConnectSensor(HomeConnectEntity):
     """Sensor class for Home Connect."""
 
-    def __init__(self, device, name, key, unit):
+    def __init__(self, device, name, key, unit, device_class = None):
         """Initialize the entity."""
         super().__init__(device, name)
         self._state = None
+        self._device_class = device_class
         self._key = key
         self._unit = unit
 
@@ -56,12 +59,26 @@ class HomeConnectSensor(HomeConnectEntity):
             self._state = None
         else:
             self._state = status[self._key].get("value", None)
-        _LOGGER.debug("Updated, new state: %s", self._state)
+            if isinstance(self._state, str):
+                if "BSH.Common.EnumType.OperationState" in self._state:
+                    self._state = self._state.replace("BSH.Common.EnumType.OperationState.", "")
+                if "BSH.Common.EnumType.PowerState" in self._state:
+                    self._state = self._state.replace("BSH.Common.EnumType.PowerState.", "")
+        _LOGGER.debug("Sensor {} updated, new state: {}".format(self._name, self._state))
 
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement."""
+        if self._unit == "C":
+            return TEMP_CELSIUS
+        if self._unit == "F":
+            return TEMP_FAHRENHEIT
         return self._unit
+
+    @property
+    def device_class(self):
+        """Return the class of this device."""
+        return self._device_class
 
     @property
     def icon(self):

@@ -10,6 +10,8 @@ from homeassistant import config_entries, core
 from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.entity import Entity
+from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE
+from homeassistant.components.binary_sensor import DEVICE_CLASS_DOOR
 
 from .const import DOMAIN
 
@@ -198,8 +200,55 @@ class DeviceWithDoor(HomeConnectDevice):
         return {
             "device": self,
             "name": self.appliance.name + " Door",
-            "device_class": "door",
+            "key": "BSH.Common.Status.DoorState",
+            "device_class": DEVICE_CLASS_DOOR,
         }
+
+
+class DeviceWithCustomSensors(HomeConnectDevice):
+    """Device that has custom specific sensors."""
+
+    _appliance_binary_sensors = []
+    _appliance_sensors = []
+
+    def get_appliance_sensors(self):
+        """Get a dictionary with info about appliance sensors."""
+
+        if not self.appliance.status:
+            _status = self.appliance.get_status()
+        else:
+            _status = self.appliance.status
+
+        _sensors = []
+        for name, object_class, device_class in self._appliance_sensors:
+            if object_class in _status:
+                _unit = ""
+                if 'unit' in _status[object_class]:
+                    _unit = _status[object_class]['unit']
+
+                _sensors.append(
+                    {
+                        "device": self,
+                        "name": " ".join((self.appliance.name, name)),
+                        "unit": _unit,
+                        "key": object_class,
+                        "device_class": device_class,
+                    }
+                )
+
+        _binary_sensors = []
+        for name, object_class, device_class in self._appliance_binary_sensors:
+            if object_class in _status:
+                _binary_sensors.append(
+                    {
+                        "device": self,
+                        "name": " ".join((self.appliance.name, name)),
+                        "key": object_class,
+                        "device_class": device_class,
+                    }
+                )
+
+        return _sensors, _binary_sensors
 
 
 class Dryer(DeviceWithDoor, DeviceWithPrograms):
@@ -232,20 +281,35 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
         }
 
 
-class Oven(DeviceWithDoor, DeviceWithPrograms):
+class Oven(DeviceWithDoor, DeviceWithPrograms, DeviceWithCustomSensors):
     """Oven class."""
 
     power_off_state = "BSH.Common.EnumType.PowerState.Standby"
 
+    _appliance_binary_sensors = [
+        [ "Local Control Active", "BSH.Common.Status.LocalControlActive", None ],
+        [ "Remote Control Start Allowed", "BSH.Common.Status.RemoteControlStartAllowed", None ],
+        [ "Remote Control Active", "BSH.Common.Status.RemoteControlActive", None ],
+    ]
+
+    _appliance_sensors = [
+        [ "Current Cavity Temperature", "Cooking.Oven.Status.CurrentCavityTemperature", DEVICE_CLASS_TEMPERATURE ],
+        [ "Operation State", "BSH.Common.Status.OperationState", None ],
+        [ "Power State", "BSH.Common.Setting.PowerState", None ],
+        [ "Setpoint Temperature", "Cooking.Oven.Option.SetpointTemperature", DEVICE_CLASS_TEMPERATURE ],
+    ]
+
     def get_entities(self):
         """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
-        program_sensors = self.get_program_sensors()
-        program_switches = self.get_program_switches()
+        _sensors, _binary_sensors = self.get_appliance_sensors()
+        binary_sensors = [door_entity] + _binary_sensors
+        sensors = self.get_program_sensors() + _sensors
+        switches = self.get_program_switches()
         return {
-            "binary_sensor": [door_entity],
-            "switch": program_switches,
-            "sensor": program_sensors,
+            "binary_sensor": binary_sensors,
+            "switch": switches,
+            "sensor": sensors,
         }
 
 
