@@ -153,11 +153,11 @@ class HomeConnectEntity(Entity):
 class DeviceWithPrograms(HomeConnectDevice):
     """Device with programs."""
 
-    _programs = []
-
     def get_programs_available(self):
         """Get the available programs."""
-        return self._programs
+        programs = self.appliance.get_programs_available()
+        _LOGGER.debug("available programs: {}".format(programs))
+        return [{"name": p} for p in programs]
 
     def get_program_switches(self):
         """Get a dictionary with info about program switches.
@@ -205,25 +205,6 @@ class DeviceWithDoor(HomeConnectDevice):
 class Dryer(DeviceWithDoor, DeviceWithPrograms):
     """Dryer class."""
 
-    _programs = [
-        {"name": "LaundryCare.Dryer.Program.Cotton"},
-        {"name": "LaundryCare.Dryer.Program.Synthetic"},
-        {"name": "LaundryCare.Dryer.Program.Mix"},
-        {"name": "LaundryCare.Dryer.Program.Blankets"},
-        {"name": "LaundryCare.Dryer.Program.BusinessShirts"},
-        {"name": "LaundryCare.Dryer.Program.DownFeathers"},
-        {"name": "LaundryCare.Dryer.Program.Hygiene"},
-        {"name": "LaundryCare.Dryer.Program.Jeans"},
-        {"name": "LaundryCare.Dryer.Program.Outdoor"},
-        {"name": "LaundryCare.Dryer.Program.SyntheticRefresh"},
-        {"name": "LaundryCare.Dryer.Program.Towels"},
-        {"name": "LaundryCare.Dryer.Program.Delicates"},
-        {"name": "LaundryCare.Dryer.Program.Super40"},
-        {"name": "LaundryCare.Dryer.Program.Shirts15"},
-        {"name": "LaundryCare.Dryer.Program.Pillow"},
-        {"name": "LaundryCare.Dryer.Program.AntiShrink"},
-    ]
-
     def get_entities(self):
         """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
@@ -239,31 +220,6 @@ class Dryer(DeviceWithDoor, DeviceWithPrograms):
 class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
     """Dishwasher class."""
 
-    _programs = [
-        {"name": "Dishcare.Dishwasher.Program.Auto1"},
-        {"name": "Dishcare.Dishwasher.Program.Auto2"},
-        {"name": "Dishcare.Dishwasher.Program.Auto3"},
-        {"name": "Dishcare.Dishwasher.Program.Eco50"},
-        {"name": "Dishcare.Dishwasher.Program.Quick45"},
-        {"name": "Dishcare.Dishwasher.Program.Intensiv70"},
-        {"name": "Dishcare.Dishwasher.Program.Normal65"},
-        {"name": "Dishcare.Dishwasher.Program.Glas40"},
-        {"name": "Dishcare.Dishwasher.Program.GlassCare"},
-        {"name": "Dishcare.Dishwasher.Program.NightWash"},
-        {"name": "Dishcare.Dishwasher.Program.Quick65"},
-        {"name": "Dishcare.Dishwasher.Program.Normal45"},
-        {"name": "Dishcare.Dishwasher.Program.Intensiv45"},
-        {"name": "Dishcare.Dishwasher.Program.AutoHalfLoad"},
-        {"name": "Dishcare.Dishwasher.Program.IntensivPower"},
-        {"name": "Dishcare.Dishwasher.Program.MagicDaily"},
-        {"name": "Dishcare.Dishwasher.Program.Super60"},
-        {"name": "Dishcare.Dishwasher.Program.Kurz60"},
-        {"name": "Dishcare.Dishwasher.Program.ExpressSparkle65"},
-        {"name": "Dishcare.Dishwasher.Program.MachineCare"},
-        {"name": "Dishcare.Dishwasher.Program.SteamFresh"},
-        {"name": "Dishcare.Dishwasher.Program.MaximumCleaning"},
-    ]
-
     def get_entities(self):
         """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
@@ -278,14 +234,6 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
 
 class Oven(DeviceWithDoor, DeviceWithPrograms):
     """Oven class."""
-
-    _programs = [
-        {"name": "Cooking.Oven.Program.HeatingMode.PreHeating"},
-        {"name": "Cooking.Oven.Program.HeatingMode.HotAir"},
-        {"name": "Cooking.Oven.Program.HeatingMode.TopBottomHeating"},
-        {"name": "Cooking.Oven.Program.HeatingMode.PizzaSetting"},
-        {"name": "Cooking.Oven.Program.Microwave.600Watt"},
-    ]
 
     power_off_state = "BSH.Common.EnumType.PowerState.Standby"
 
@@ -304,30 +252,6 @@ class Oven(DeviceWithDoor, DeviceWithPrograms):
 class Washer(DeviceWithDoor, DeviceWithPrograms):
     """Washer class."""
 
-    _programs = [
-        {"name": "LaundryCare.Washer.Program.Cotton"},
-        {"name": "LaundryCare.Washer.Program.Cotton.CottonEco"},
-        {"name": "LaundryCare.Washer.Program.EasyCare"},
-        {"name": "LaundryCare.Washer.Program.Mix"},
-        {"name": "LaundryCare.Washer.Program.DelicatesSilk"},
-        {"name": "LaundryCare.Washer.Program.Wool"},
-        {"name": "LaundryCare.Washer.Program.Sensitive"},
-        {"name": "LaundryCare.Washer.Program.Auto30"},
-        {"name": "LaundryCare.Washer.Program.Auto40"},
-        {"name": "LaundryCare.Washer.Program.Auto60"},
-        {"name": "LaundryCare.Washer.Program.Chiffon"},
-        {"name": "LaundryCare.Washer.Program.Curtains"},
-        {"name": "LaundryCare.Washer.Program.DarkWash"},
-        {"name": "LaundryCare.Washer.Program.Dessous"},
-        {"name": "LaundryCare.Washer.Program.Monsoon"},
-        {"name": "LaundryCare.Washer.Program.Outdoor"},
-        {"name": "LaundryCare.Washer.Program.PlushToy"},
-        {"name": "LaundryCare.Washer.Program.ShirtsBlouses"},
-        {"name": "LaundryCare.Washer.Program.SportFitness"},
-        {"name": "LaundryCare.Washer.Program.Towels"},
-        {"name": "LaundryCare.Washer.Program.WaterProof"},
-    ]
-
     def get_entities(self):
         """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
@@ -343,15 +267,6 @@ class Washer(DeviceWithDoor, DeviceWithPrograms):
 class CoffeeMaker(DeviceWithPrograms):
     """Coffee maker class."""
 
-    _programs = [
-        {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.Espresso"},
-        {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.EspressoMacchiato"},
-        {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.Coffee"},
-        {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.Cappuccino"},
-        {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.LatteMacchiato"},
-        {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.CaffeLatte"},
-    ]
-
     power_off_state = "BSH.Common.EnumType.PowerState.Standby"
 
     def get_entities(self):
@@ -363,12 +278,6 @@ class CoffeeMaker(DeviceWithPrograms):
 
 class Hood(DeviceWithPrograms):
     """Hood class."""
-
-    _programs = [
-        {"name": "Cooking.Common.Program.Hood.Automatic"},
-        {"name": "Cooking.Common.Program.Hood.Venting"},
-        {"name": "Cooking.Common.Program.Hood.DelayedShutOff"},
-    ]
 
     def get_entities(self):
         """Get a dictionary with infos about the associated entities."""
@@ -388,8 +297,6 @@ class FridgeFreezer(DeviceWithDoor):
 
 class Hob(DeviceWithPrograms):
     """Hob class."""
-
-    _programs = [{"name": "Cooking.Hob.Program.PowerLevelMode"}]
 
     def get_entities(self):
         """Get a dictionary with infos about the associated entities."""
