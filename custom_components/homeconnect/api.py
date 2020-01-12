@@ -2,21 +2,29 @@
 
 from asyncio import run_coroutine_threadsafe
 import logging
+import re
 
 import homeconnect
 from homeconnect.api import HomeConnectError
+import voluptuous as vol
 
 from homeassistant import config_entries, core
 from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers import config_validation as cv
 from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE
 from homeassistant.components.binary_sensor import DEVICE_CLASS_DOOR
 
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    SERVICE_STARTPROGRAM,
+    SERVICE_STOPPROGRAM,
+    PROGRAM_NAMES,
+    PROGRAM_OPTIONS,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
 
 class ConfigEntryAuth(homeconnect.HomeConnectAPI):
     """Provide Home Connect authentication tied to an OAuth2 based config entry."""
@@ -79,6 +87,7 @@ class HomeConnectDevice:
     # for some devices, this is instead 'BSH.Common.EnumType.PowerState.Standby'
     # see https://developer.home-connect.com/docs/settings/power_state
     power_off_state = "BSH.Common.EnumType.PowerState.Off"
+    has_programs = False
 
     def __init__(self, appliance):
         """Initialize the device class."""
@@ -154,14 +163,31 @@ class HomeConnectEntity(Entity):
         _LOGGER.debug("Entity update triggered on %s", self)
         self.async_schedule_update_ha_state(True)
 
+def convert_to_snake(camel):
+    """Convert from CamelCase to snake_case.
+
+    Taken from https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    """
+    snake = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", camel)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
+
+
+def format_key(key):
+    """Format Home Connect keys like `BSH.Something.SomeValue` to a simple `some_value`."""
+    if not isinstance(key, str):
+        return key
+    return convert_to_snake(key.split(".")[-1])
+
 
 class DeviceWithPrograms(HomeConnectDevice):
     """Device with programs."""
 
+    has_programs = True
+
     def get_programs_available(self):
         """Get the available programs."""
         programs = self.appliance.get_programs_available()
-        _LOGGER.debug("available programs: {}".format(programs))
+        #_LOGGER.debug("available programs: {}".format(programs))
         return [{"name": p} for p in programs]
 
     def get_program_switches(self):
@@ -170,7 +196,77 @@ class DeviceWithPrograms(HomeConnectDevice):
         There will be one switch for each program.
         """
         programs = self.get_programs_available()
-        return [{"device": self, "program_name": p["name"]} for p in programs]
+        return [{"device": self, "program_name": p['name']} for p in programs]
+
+    def get_programs_services(self):
+        """Get a dictionary with info about program services."""
+
+        def start_program(service):
+            """Service to change current home schedule."""
+            program = ''
+            for p_key, p_name in PROGRAM_NAMES.items():
+                if p_name == service.service.replace(self.appliance.type.lower() + '_' + SERVICE_STARTPROGRAM + '_', ''):
+                    program = p_key
+                    options = {}
+                    for d in service.data:
+                        #_LOGGER.debug(f"d: {d}")
+                        for o_key, o_name in PROGRAM_OPTIONS.items():
+                            if o_name == d:
+                                options[o_key] = service.data.get(d)
+                    break
+            _LOGGER.info(f"Starting progra {program} with options {options}")
+            self.appliance.start_program(program, options)
+
+        def stop_program(service):
+            """Service to stop the current active program."""
+            self.appliance.stop_program()
+            _LOGGER.debug("stop program service called")
+
+        programs = self.appliance.get_programs_available()
+        #_LOGGER.debug("available programs: {}".format(programs))
+        _services = []
+        for p in programs:
+            options = self.appliance.get_program_options(p)
+            if options is not None:
+                #_LOGGER.debug(f"program {p}")
+                #_LOGGER.debug(f"options: {options}")
+                _schema = {}
+                i = 0
+                for o in options:
+                    #_LOGGER.debug(f"paramters: {o}")
+                    for v in o.keys():
+                        #_LOGGER.debug(f"v {v}")
+                        values = options[i][v]
+                        #_LOGGER.debug(f"values: {values}")
+                        param_key = values['key']
+                        if param_key in PROGRAM_OPTIONS:
+                            param_key = PROGRAM_OPTIONS[param_key]
+                        if values['type'] in ["Int", "Double"]:
+                            _schema[vol.Required(param_key)] = cv.positive_int
+                        elif values['type'] in ["Boolean"]:
+                            _schema[vol.Required(param_key)] = cv.boolean
+                        else: 
+                            _LOGGER.error(f"option type {values['type']} not handled")
+                    i+=1
+                _service_schema = vol.Schema(_schema)
+                if p in PROGRAM_NAMES:
+                    program_name = PROGRAM_NAMES[p]
+                else:
+                    program_name = format_key(p)
+                _services.append({  'service_domain': DOMAIN,
+                                'service_name': self.appliance.type.lower() + '_' + SERVICE_STARTPROGRAM + '_' + program_name,
+                                'service_callback': start_program,
+                                'service_schema': _service_schema,
+                            })
+            else:
+                _LOGGER.debug(f"no options found for {p}")
+        _services.append({  'service_domain': DOMAIN,
+                        'service_name': self.appliance.type.lower() + '_' + SERVICE_STOPPROGRAM,
+                        'service_callback': stop_program,
+                        'service_schema': vol.Schema({}),
+                    })
+        return _services
+
 
     def get_program_sensors(self):
         """Get a dictionary with info about program sensors.
@@ -239,6 +335,8 @@ class DeviceWithCustomSensors(HomeConnectDevice):
                     }
                 )
 
+        #_LOGGER.debug(f"sensors to be created: {_sensors}")
+
         _binary_sensors = []
         for name, object_class, device_class in self._appliance_binary_sensors:
             if object_class in _status:
@@ -251,6 +349,7 @@ class DeviceWithCustomSensors(HomeConnectDevice):
                     }
                 )
 
+        #_LOGGER.debug(f"binary sensors to be created: {_binary_sensors}")
         return _sensors, _binary_sensors
 
 
@@ -293,6 +392,7 @@ class Oven(DeviceWithDoor, DeviceWithPrograms, DeviceWithCustomSensors):
         [ "Local Control Active", "BSH.Common.Status.LocalControlActive", None ],
         [ "Remote Control Start Allowed", "BSH.Common.Status.RemoteControlStartAllowed", None ],
         [ "Remote Control Active", "BSH.Common.Status.RemoteControlActive", None ],
+        [ "Fast PreHeat", "Cooking.Oven.Option.FastPreHeat", None ],
     ]
 
     _appliance_sensors = [
@@ -300,6 +400,7 @@ class Oven(DeviceWithDoor, DeviceWithPrograms, DeviceWithCustomSensors):
         [ "Operation State", "BSH.Common.Status.OperationState", None ],
         [ "Power State", "BSH.Common.Setting.PowerState", None ],
         [ "Setpoint Temperature", "Cooking.Oven.Option.SetpointTemperature", DEVICE_CLASS_TEMPERATURE ],
+        [ "Active Program", "BSH.Common.Root.ActiveProgram", None ],
     ]
 
     def get_entities(self):
@@ -309,6 +410,7 @@ class Oven(DeviceWithDoor, DeviceWithPrograms, DeviceWithCustomSensors):
         binary_sensors = [door_entity] + _binary_sensors
         sensors = self.get_program_sensors() + _sensors
         switches = self.get_program_switches()
+        self.get_programs_services()
         return {
             "binary_sensor": binary_sensors,
             "switch": switches,

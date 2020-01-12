@@ -8,10 +8,13 @@ import logging
 from homeassistant.components.binary_sensor import BinarySensorDevice, DEVICE_CLASS_DOOR
 
 from .api import HomeConnectEntity
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    BINARY_SENSORS_ON_STATES,
+    BINARY_SENSORS_OFF_STATES,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Home Connect binary sensor."""
@@ -32,16 +35,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
     """Binary sensor for Home Connect."""
-
-    _OFF_STATES = [
-                "BSH.Common.EnumType.DoorState.Closed",
-                "BSH.Common.EnumType.DoorState.Locked",
-            ]
-    
-    _ON_STATES = [
-                "BSH.Common.EnumType.DoorState.Open",
-            ]
-
 
     def __init__(self, device, name, key, device_class = None):
         """Initialize the entitiy."""
@@ -67,9 +60,9 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
             self._state = None
         elif isinstance(state.get("value", None), bool):
             self._state = state.get("value", None)
-        elif state.get("value", None) in self._OFF_STATES:
+        elif state.get("value", None) in BINARY_SENSORS_OFF_STATES:
             self._state = False
-        elif state.get("value", None) in self._ON_STATES:
+        elif state.get("value", None) in BINARY_SENSORS_ON_STATES:
             self._state = True
         else:
             _LOGGER.warning("Unexpected value for HomeConnect door state: %s", state)

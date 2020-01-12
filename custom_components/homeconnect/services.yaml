@@ -1,0 +1,149 @@
+oven_stop_program:
+  description: Stop the oven active program.
+
+oven_start_program_hot_air:
+  description: Start oven Hot Air program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    fast_pre_heat:
+      description: The cooking compartment is heated up quickly if true
+      example: True
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_hot_air_eco:
+  description: Start oven Hot Air Eco program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_top_bottom_heating_eco:
+  description: Start oven Top Bottom Heating Eco program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_top_bottom_heating:
+  description: Start oven Top Bottom Heating program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    fast_pre_heat:
+      description: The cooking compartment is heated up quickly if true
+      example: True
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_hot_air_grilling:
+  description: Start oven Hot Air Grilling program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_pizza_setting:
+  description: Start oven Pizza Setting program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_slow_cook:
+  description: Start oven Slow Cook program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_bottom_heating:
+  description: Start oven Bottom Heating program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_defrost:
+  description: Start oven Defrost program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+
+oven_start_program_keep_warm:
+  description: Start oven Keep Warm program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+
+oven_start_program_preheat_ovenware:
+  description: Start oven Preheat Ovenware program.
+  fields:
+    setpoint_temperature:
+      description: Target cavity temperature in C.
+      example: 180
+    duration:
+      description: Run time of the program in seconds.
+      example: 600
+    start_in_relative:
+      description: The program will be activated but not started until the defined time span in seconds elapses.
+      example: 180
+

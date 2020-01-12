@@ -12,7 +12,6 @@ from homeassistant.const import TEMP_CELSIUS, TEMP_FAHRENHEIT
 
 _LOGGER = logging.getLogger(__name__)
 
-
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Home Connect sensor."""
 
@@ -26,6 +25,17 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             device = device_dict["device"]
             device.entities += entity_list
             entities += entity_list
+            if device.has_programs:
+                services = device.get_programs_services()
+                _LOGGER.debug(f"services to register: {services}")
+                for s in services:
+                    _LOGGER.debug(f"registering service {s['service_name']}")
+                    hass.services.async_register(
+                        s['service_domain'],
+                        s['service_name'],
+                        s['service_callback'],
+                        schema=s['service_schema'],
+                    )
         return entities
 
     async_add_entities(await hass.async_add_executor_job(get_entities), True)
