@@ -12,7 +12,7 @@ from homeconnect.api import HomeConnectError
 from homeassistant.components.switch import SwitchDevice
 
 from .api import HomeConnectEntity
-from .const import DOMAIN
+from .const import DOMAIN, CONF_SHOW_NOTIFICATIONS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,10 +68,12 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
             self.device.appliance.start_program(self.program_name)
         except HomeConnectError as err:
             error = json.loads(str(err).replace("'", '"'))
-            self._hass.components.persistent_notification.create(
-                'Key: {}<br>Description: <strong>{}</strong>'.format(error["key"], error["description"]),
-                title='Error while trying to start program: {}'.format(self.program_name),
-                notification_id='homeconnect_notification')
+
+            if self._hass.data[DOMAIN][CONF_SHOW_NOTIFICATIONS]:
+                self._hass.components.persistent_notification.create(
+                    'Key: {}<br>Description: <strong>{}</strong>'.format(error["key"], error["description"]),
+                    title='Error while trying to start program: {}'.format(self.program_name),
+                    notification_id='homeconnect_notification')
 
             _LOGGER.error("Error while trying to start program: %s", err)
         self.async_entity_update()

@@ -19,7 +19,7 @@ from homeassistant.helpers import config_entry_oauth2_flow, config_validation as
 from homeassistant.util import Throttle
 
 from . import api, config_flow
-from .const import DOMAIN, OAUTH2_AUTHORIZE, OAUTH2_TOKEN
+from .const import DOMAIN, OAUTH2_AUTHORIZE, OAUTH2_TOKEN, CONF_SHOW_NOTIFICATIONS
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -33,6 +33,7 @@ CONFIG_SCHEMA = vol.Schema(
             {
                 vol.Required(CONF_CLIENT_ID): cv.string,
                 vol.Required(CONF_CLIENT_SECRET): cv.string,
+                vol.Optional(CONF_SHOW_NOTIFICATIONS, default=True): cv.boolean,
             }
         )
     },
@@ -48,6 +49,8 @@ async def async_setup(hass: HomeAssistant, config: dict, add_entities=None):
 
     if DOMAIN not in config:
         return True
+
+    hass.data[DOMAIN][CONF_SHOW_NOTIFICATIONS] = config[DOMAIN][CONF_SHOW_NOTIFICATIONS]
 
     config_flow.OAuth2FlowHandler.async_register_implementation(
         hass,
@@ -70,9 +73,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass, entry
     )
 
-    hc_api = api.ConfigEntryAuth(hass, entry, implementation)
-
-    hass.data[DOMAIN][entry.entry_id] = hc_api
+    hass.data[DOMAIN][entry.entry_id] = api.ConfigEntryAuth(hass, entry, implementation)
 
     await update_all_devices(hass, entry)
 
