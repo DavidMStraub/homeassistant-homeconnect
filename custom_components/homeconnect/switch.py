@@ -3,6 +3,7 @@
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/integrations/switch.homeconnect/
 """
+import json
 import logging
 import re
 
@@ -27,7 +28,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         hc_api = hass.data[DOMAIN][config_entry.entry_id]
         for device_dict in hc_api.devices:
             entity_dicts = device_dict.get("entities", {}).get("switch", [])
-            entity_list = [HomeConnectProgramSwitch(**d) for d in entity_dicts]
+            entity_list = [HomeConnectProgramSwitch(hass, **d) for d in entity_dicts]
             entity_list += [HomeConnectPowerSwitch(device_dict["device"])]
             device = device_dict["device"]
             device.entities += entity_list
@@ -40,13 +41,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
     """Switch class for Home Connect."""
 
-    def __init__(self, device, program_name):
+    def __init__(self, hass, device, program_name):
         """Initialize the entitiy."""
         name = " ".join([device.appliance.name, "Program", program_name.split(".")[-1]])
         super().__init__(device, name)
         self.program_name = program_name
         self._state = None
         self._remote_allowed = None
+        self._hass = hass
 
     @property
     def is_on(self):
@@ -62,8 +64,15 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
         """Start the program."""
         _LOGGER.debug("tried to turn on program %s", self.program_name)
         try:
+            self.device.appliance.select_program({"data": {"key": self.program_name}})
             self.device.appliance.start_program(self.program_name)
         except HomeConnectError as err:
+            error = json.loads(str(err).replace("'", '"'))
+            self._hass.components.persistent_notification.create(
+                'Key: {}<br>Description: <strong>{}</strong>'.format(error["key"], error["description"]),
+                title='Error while trying to start program: {}'.format(self.program_name),
+                notification_id='homeconnect_notification')
+
             _LOGGER.error("Error while trying to start program: %s", err)
         self.async_entity_update()
 
