@@ -18,6 +18,7 @@ Also, you need to **change the redirect URI** compared to before: replace `.../a
 homeconnect:
   client_id: YOUR_CLIENT_ID
   client_secret: YOUR_CLIENT_SECRET
+  show_notifications: true|false  (will show program start errors as persistent notifications. Default = true)
 ```
 5. Copy the contents of `custom_components` to the  `custom_components` directory of your Home Assistant configuration directory
 6. Navigate to the Integrations page and select "Home Connect"
