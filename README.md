@@ -11,7 +11,7 @@ Also, you need to **change the redirect URI** compared to before: replace `.../a
 ## Usage
 
 1. Register an account with the [Home Connect Developer Program](https://developer.home-connect.com)
-2. Register a new application with the Redirect URI `https://YOUR_HOMEASSISTANT_BASE_URL:PORT/auth/external/callback` (it will not work without https, but your Home Assistant instance does *not* have to be accessible from the internet and a self-signed certificate will do)
+2. [Register a new application](https://developer.home-connect.com/applications/add) with `OAuth Flow` type `Authorization Code Grant Flow` and Redirect URI `https://YOUR_HOMEASSISTANT_BASE_URL:PORT/auth/external/callback` (it will not work without https, but your Home Assistant instance does *not* have to be accessible from the internet and a self-signed certificate will do)
 3. Make sure the `http` component in your `configuration.yaml` has the base url set to `YOUR_HOMEASSISTANT_BASE_URL:PORT` (it will not work otherwise)
 4. Add the following to your `configuration.yaml`:
 ```yaml
