@@ -1,12 +1,9 @@
-# Home Assistant Home Connect
+**:warning: Breaking change: as of version 1.0, the component has been renamed and this repository will be used for beta testing new features that are not part of the Home Assistant Core Home Connect integration based on this work. :warning:**
 
-Integration of home appliances supporting the Home Connect standard into Home Assistant.
+# Home Assistant Home Connect development repository
 
-## Recent breaking changes
+Custom component for testing experimental features of the Home Assistant Home Connect intgegration.
 
-Note that the current version **requires Home Assistant 0.102 or newer**.
-
-Also, you need to **change the redirect URI** compared to before: replace `.../api/homeconnect` by `.../auth/external/callback`
 
 ## Usage
 
@@ -15,7 +12,7 @@ Also, you need to **change the redirect URI** compared to before: replace `.../a
 3. Make sure the `http` component in your `configuration.yaml` has the base url set to `YOUR_HOMEASSISTANT_BASE_URL:PORT` (it will not work otherwise)
 4. Add the following to your `configuration.yaml`:
 ```yaml
-homeconnect:
+home_connect_beta:
   client_id: YOUR_CLIENT_ID
   client_secret: YOUR_CLIENT_SECRET
 ```
@@ -26,6 +23,4 @@ Step 5 can also be replaced by using [HACS](https://hacs.xyz/) and adding this r
 
 ## Feedback
 
-Please report problems by [opening an issue](https://github.com/DavidMStraub/homeassistant-homeconnect/issues). Feel free to report success in the [Home Assistant forum](https://community.home-assistant.io/t/home-connect-alpha-testers-wanted/82603).
-
-Pull requests are welcome!
+Since the Home Connect component originally developed in this repository has been [merged](https://github.com/home-assistant/home-assistant/pull/29214) into Home Assistant Core as of May 5, 2020, this custom component will only be used for testing new features. You are welcome to contribute pull requests, but of course any bug fixes and serious improvements can also be directly submitted to Home Assistant Core.
