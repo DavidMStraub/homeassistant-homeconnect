@@ -1,13 +1,9 @@
 {
-  "domain": "homeconnect",
+  "domain": "home_connect_beta",
   "name": "Home Connect",
-  "documentation": "https://www.home-assistant.io/integrations/homeconnect",
+  "documentation": "https://www.home-assistant.io/integrations/home_connect_beta",
   "dependencies": ["http"],
-  "codeowners": [
-    "@DavidMStraub"
-  ],
-  "requirements": [
-    "homeconnect==0.5"
-  ],
+  "codeowners": ["@DavidMStraub"],
+  "requirements": ["homeconnect==0.5"],
   "config_flow": true
 }

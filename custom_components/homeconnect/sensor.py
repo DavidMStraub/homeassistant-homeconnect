@@ -1,8 +1,4 @@
-"""Provides a sensor for Home Connect.
-
-For more details about this platform, please refer to the documentation at
-https://home-assistant.io/integrations/sensor.homeconnect/
-"""
+"""Provides a sensor for Home Connect."""
 
 from datetime import timedelta
 import logging
@@ -10,8 +6,8 @@ import logging
 from homeassistant.const import DEVICE_CLASS_TIMESTAMP
 import homeassistant.util.dt as dt_util
 
-from .api import HomeConnectEntity
 from .const import DOMAIN
+from .entity import HomeConnectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,10 +21,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         hc_api = hass.data[DOMAIN][config_entry.entry_id]
         for device_dict in hc_api.devices:
             entity_dicts = device_dict.get("entities", {}).get("sensor", [])
-            entity_list = [HomeConnectSensor(**d) for d in entity_dicts]
-            device = device_dict["device"]
-            device.entities += entity_list
-            entities += entity_list
+            entities += [HomeConnectSensor(**d) for d in entity_dicts]
         return entities
 
     async_add_entities(await hass.async_add_executor_job(get_entities), True)
@@ -37,9 +30,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HomeConnectSensor(HomeConnectEntity):
     """Sensor class for Home Connect."""
 
-    def __init__(self, device, name, key, unit, icon, device_class, sign=1):
+    def __init__(self, device, desc, key, unit, icon, device_class, sign=1):
         """Initialize the entity."""
-        super().__init__(device, name)
+        super().__init__(device, desc)
         self._state = None
         self._key = key
         self._unit = unit
@@ -57,7 +50,7 @@ class HomeConnectSensor(HomeConnectEntity):
         """Return true if the sensor is available."""
         return self._state is not None
 
-    def update(self):
+    async def async_update(self):
         """Update the sensos status."""
         status = self.device.appliance.status
         if self._key not in status:
@@ -76,9 +69,11 @@ class HomeConnectSensor(HomeConnectEntity):
                     self._state = None
                 else:
                     seconds = self._sign * float(status[self._key]["value"])
-                    self._state = dt_util.utcnow() + timedelta(seconds=seconds)
+                    self._state = (
+                        dt_util.utcnow() + timedelta(seconds=seconds)
+                    ).isoformat()
             else:
-                self._state = status[self._key].get("value", None)
+                self._state = status[self._key].get("value")
         _LOGGER.debug("Updated, new state: %s", self._state)
 
     @property
