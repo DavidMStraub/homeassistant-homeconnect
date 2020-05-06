@@ -3,7 +3,7 @@ import logging
 
 from homeconnect.api import HomeConnectError
 
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.switch import SwitchDevice
 
 from .const import (
     BSH_ACTIVE_PROGRAM,
@@ -34,7 +34,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(await hass.async_add_executor_job(get_entities), True)
 
 
-class HomeConnectProgramSwitch(HomeConnectEntity, SwitchEntity):
+class HomeConnectProgramSwitch(HomeConnectEntity, SwitchDevice):
     """Switch class for Home Connect."""
 
     def __init__(self, device, program_name):
@@ -85,7 +85,7 @@ class HomeConnectProgramSwitch(HomeConnectEntity, SwitchEntity):
         _LOGGER.debug("Updated, new state: %s", self._state)
 
 
-class HomeConnectPowerSwitch(HomeConnectEntity, SwitchEntity):
+class HomeConnectPowerSwitch(HomeConnectEntity, SwitchDevice):
     """Power switch class for Home Connect."""
 
     def __init__(self, device):
