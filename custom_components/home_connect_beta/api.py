@@ -251,6 +251,15 @@ class Oven(DeviceWithDoor, DeviceWithPrograms):
         {"name": "Cooking.Oven.Program.HeatingMode.TopBottomHeating"},
         {"name": "Cooking.Oven.Program.HeatingMode.PizzaSetting"},
         {"name": "Cooking.Oven.Program.Microwave.600Watt"},
+        {"name": "Cooking.Oven.Program.HeatingMode.SlowCook"},
+        {"name": "Cooking.Oven.Program.HeatingMode.HotAirEco"},
+        {"name": "Cooking.Oven.Program.HeatingMode.TopBottomHeatingEco"},
+        {"name": "Cooking.Oven.Program.HeatingMode.HotAirGrilling"},
+        {"name": "Cooking.Oven.Program.HeatingMode.IntensiveHeat"},
+        {"name": "Cooking.Oven.Program.HeatingMode.BottomHeating"},
+        {"name": "Cooking.Oven.Program.HeatingMode.PreheatOvenware"},
+        {"name": "Cooking.Oven.Program.HeatingMode.Desiccation"},
+        {"name": "Cooking.Oven.Program.HeatingMode.KeepWarm"},
     ]
 
     power_off_state = BSH_POWER_STANDBY
