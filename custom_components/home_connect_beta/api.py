@@ -333,6 +333,21 @@ class CoffeeMaker(DeviceWithPrograms):
         {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.WarmMilk"},
         {"name": "ConsumerProducts.CoffeeMaker.Program.Beverage.Ristretto"},
         {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.Cortado"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.CafeCortado"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.WienerMelange"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.KleinerBrauner"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.GrosserBrauner"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.Verlaengerter"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.VerlaengerterBraun"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.CafeConLeche"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.CafeAuLait"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.Doppio"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.Kaapi"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.KoffieVerkeerd"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.Garoto"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.RedEye"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.BlackEye"},
+        {"name": "ConsumerProducts.CoffeeMaker.Program.CoffeeWorld.DeadEye"},
     ]
 
     power_off_state = BSH_POWER_STANDBY
