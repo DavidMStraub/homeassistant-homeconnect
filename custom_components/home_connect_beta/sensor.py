@@ -64,8 +64,6 @@ class HomeConnectSensor(HomeConnectEntity):
                 elif (
                     self._state is not None
                     and self._sign == 1
-                    # 2020-06-22T17:42:44.987588+00:00
-                    # 2020-06-23T10:07:31+00:00
                     and datetime.strptime(self._state, '%Y-%m-%dT%H:%M:%S%z') < dt_util.utcnow()
                 ):
                     # if the date is supposed to be in the future but we're
