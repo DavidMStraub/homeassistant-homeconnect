@@ -1,6 +1,8 @@
 """Provides a sensor for Home Connect."""
 
 from datetime import timedelta
+from datetime import datetime
+
 import logging
 
 from homeassistant.const import DEVICE_CLASS_TIMESTAMP
@@ -62,7 +64,9 @@ class HomeConnectSensor(HomeConnectEntity):
                 elif (
                     self._state is not None
                     and self._sign == 1
-                    and self._state < dt_util.utcnow()
+                    # 2020-06-22T17:42:44.987588+00:00
+                    # 2020-06-23T10:07:31+00:00
+                    and datetime.strptime(self._state, '%Y-%m-%dT%H:%M:%S%z') < dt_util.utcnow()
                 ):
                     # if the date is supposed to be in the future but we're
                     # already past it, set state to None.
@@ -71,7 +75,7 @@ class HomeConnectSensor(HomeConnectEntity):
                     seconds = self._sign * float(status[self._key]["value"])
                     self._state = (
                         dt_util.utcnow() + timedelta(seconds=seconds)
-                    ).isoformat()
+                    ).isoformat(timespec='seconds')
             else:
                 self._state = status[self._key].get("value")
         _LOGGER.debug("Updated, new state: %s", self._state)
