@@ -1,7 +1,7 @@
 """Provides a binary sensor for Home Connect."""
 import logging
 
-from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.components.binary_sensor import BinarySensorEntity
 
 from .const import BSH_DOOR_STATE, DOMAIN
 from .entity import HomeConnectEntity
@@ -23,7 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(await hass.async_add_executor_job(get_entities), True)
 
 
-class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorDevice):
+class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorEntity):
     """Binary sensor for Home Connect."""
 
     def __init__(self, device, desc, device_class):
