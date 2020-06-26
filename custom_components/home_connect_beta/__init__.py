@@ -1,20 +1,38 @@
 """Support for BSH Home Connect appliances."""
 
 import asyncio
-from datetime import timedelta
 import logging
+from datetime import timedelta
+from typing import Optional
 
-from requests import HTTPError
 import voluptuous as vol
+from requests import HTTPError
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET
+from homeassistant.const import ATTR_ENTITY_ID, CONF_CLIENT_ID, CONF_CLIENT_SECRET
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import config_entry_oauth2_flow, config_validation as cv
+from homeassistant.helpers import config_entry_oauth2_flow
+from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
+from homeconnect.api import HomeConnectError
 
 from . import api, config_flow
-from .const import DOMAIN, OAUTH2_AUTHORIZE, OAUTH2_TOKEN
+from .const import (
+    ATTR_KEY,
+    ATTR_PROGRAM,
+    ATTR_VALUE,
+    BSH_PAUSE,
+    BSH_RESUME,
+    DOMAIN,
+    OAUTH2_AUTHORIZE,
+    OAUTH2_TOKEN,
+    SERVICE_OPTION_ACTIVE,
+    SERVICE_OPTION_SELECTED,
+    SERVICE_PAUSE,
+    SERVICE_RESUME,
+    SERVICE_SELECT,
+    SERVICE_SETTING,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +50,32 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
+SERVICE_SETTING_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+        vol.Required(ATTR_KEY): str,
+        vol.Required(ATTR_VALUE): str,
+    }
+)
+
+SERVICE_PROGRAM_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required(ATTR_PROGRAM): str,}
+)
+
 PLATFORMS = ["binary_sensor", "sensor", "switch"]
+
+
+def _get_appliance_by_entity_id(
+    hass: HomeAssistant, entity_id: str
+) -> Optional[api.HomeConnectDevice]:
+    """Return a Home Connect appliance instance given an entity_id."""
+    for entry_id in hass.data[DOMAIN]:
+        for device in entry_id.devices:
+            for entity in device.entities:
+                if entity.entity_id == entity_id:
+                    return device.appliance
+    _LOGGER.error("Appliance for %s not found.", entity_id)
+    return None
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -52,6 +95,81 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             OAUTH2_AUTHORIZE,
             OAUTH2_TOKEN,
         ),
+    )
+
+    async def _async_service_program(call, method):
+        """Generic callback for services taking a program."""
+        program = call.data[ATTR_PROGRAM]
+        entity_id = call.data[ATTR_ENTITY_ID]
+        appliance = _get_appliance_by_entity_id(hass, entity_id)
+        if appliance is not None:
+            await hass.async_add_executor_job(getattr(appliance, method), program)
+
+    async def _async_service_command(call, command):
+        """Generic callback for services executing a command."""
+        entity_id = call.data[ATTR_ENTITY_ID]
+        appliance = _get_appliance_by_entity_id(hass, entity_id)
+        if appliance is not None:
+            await hass.async_add_executor_job(appliance.execute_command, command)
+
+    async def _async_service_key_value(call, method):
+        """Generic callback for services taking a key and value."""
+        key = call.data[ATTR_KEY]
+        value = call.data[ATTR_VALUE]
+        entity_id = call.data[ATTR_ENTITY_ID]
+        appliance = _get_appliance_by_entity_id(hass, entity_id)
+        if appliance is not None:
+            await hass.async_add_executor_job(
+                getattr(appliance, method), key, value,
+            )
+
+    async def async_service_option_active(call):
+        """Service for setting an option for an active program."""
+        await _async_service_key_value(call, "set_options_active_program")
+
+    async def async_service_option_selected(call):
+        """Service for setting an option for a selected program."""
+        await _async_service_key_value(call, "set_options_selected_program")
+
+    async def async_service_pause(call):
+        """Service for pausing a program."""
+        await _async_service_command(call, BSH_PAUSE)
+
+    async def async_service_resume(call):
+        """Service for resuming a paused program."""
+        await _async_service_command(call, BSH_RESUME)
+
+    async def async_service_select(call):
+        """Service for selecting a program."""
+        await _async_service_program(call, "select_program")
+
+    async def async_service_setting(call):
+        """Service for changing a setting."""
+        await _async_service_key_value(call, "set_setting")
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_OPTION_ACTIVE,
+        async_service_option_active,
+        schema=SERVICE_SETTING_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_OPTION_SELECTED,
+        async_service_option_selected,
+        schema=SERVICE_SETTING_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_SETTING, async_service_setting, schema=SERVICE_SETTING_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_PAUSE, async_service_pause, schema=SERVICE_PROGRAM_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_RESUME, async_service_resume, schema=SERVICE_PROGRAM_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_SELECT, async_service_select, schema=SERVICE_PROGRAM_SCHEMA
     )
 
     return True

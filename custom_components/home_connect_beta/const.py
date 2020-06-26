@@ -12,5 +12,18 @@ BSH_POWER_STANDBY = "BSH.Common.EnumType.PowerState.Standby"
 BSH_ACTIVE_PROGRAM = "BSH.Common.Root.ActiveProgram"
 BSH_OPERATION_STATE = "BSH.Common.Status.OperationState"
 BSH_DOOR_STATE = "BSH.Common.Status.DoorState"
+BSH_PAUSE = "BSH.Common.Command.PauseProgram"
+BSH_RESUME = "BSH.Common.Command.ResumeProgram"
 
 SIGNAL_UPDATE_ENTITIES = "home_connect_beta.update_entities"
+
+SERVICE_SELECT = "select_program"
+SERVICE_PAUSE = "pause_program"
+SERVICE_RESUME = "resume_program"
+SERVICE_OPTION_ACTIVE = "set_option_active"
+SERVICE_OPTION_SELECTED = "set_option_selected"
+SERVICE_SETTING = "change_setting"
+
+ATTR_PROGRAM = "program"
+ATTR_KEY = "key"
+ATTR_VALUE = "value"
