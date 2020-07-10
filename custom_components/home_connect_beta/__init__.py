@@ -70,7 +70,8 @@ def _get_appliance_by_entity_id(
 ) -> Optional[api.HomeConnectDevice]:
     """Return a Home Connect appliance instance given an entity_id."""
     for hc in hass.data[DOMAIN].values():
-        for device in hc.devices:
+        for dev_dict in hc.devices:
+            device = dev_dict["device"]
             for entity in device.entities:
                 if entity.entity_id == entity_id:
                     return device.appliance
