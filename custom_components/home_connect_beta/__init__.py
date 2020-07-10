@@ -54,7 +54,7 @@ SERVICE_SETTING_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_id,
         vol.Required(ATTR_KEY): str,
-        vol.Required(ATTR_VALUE): str,
+        vol.Required(ATTR_VALUE): vol.Coerce(str),
     }
 )
 
@@ -69,11 +69,10 @@ def _get_appliance_by_entity_id(
     hass: HomeAssistant, entity_id: str
 ) -> Optional[api.HomeConnectDevice]:
     """Return a Home Connect appliance instance given an entity_id."""
-    for entry_id in hass.data[DOMAIN]:
-        for device in entry_id.devices:
-            for entity in device.entities:
-                if entity.entity_id == entity_id:
-                    return device.appliance
+    for device in hass.data[DOMAIN]:
+        for entity in device.entities:
+            if entity.entity_id == entity_id:
+                return device.appliance
     _LOGGER.error("Appliance for %s not found.", entity_id)
     return None
 
