@@ -62,6 +62,9 @@ SERVICE_PROGRAM_SCHEMA = vol.Schema(
     {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required(ATTR_PROGRAM): str,}
 )
 
+SERVICE_COMMAND_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): cv.entity_id})
+
+
 PLATFORMS = ["binary_sensor", "sensor", "switch"]
 
 
@@ -164,10 +167,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         DOMAIN, SERVICE_SETTING, async_service_setting, schema=SERVICE_SETTING_SCHEMA
     )
     hass.services.async_register(
-        DOMAIN, SERVICE_PAUSE, async_service_pause, schema=SERVICE_PROGRAM_SCHEMA
+        DOMAIN, SERVICE_PAUSE, async_service_pause, schema=SERVICE_COMMAND_SCHEMA
     )
     hass.services.async_register(
-        DOMAIN, SERVICE_RESUME, async_service_resume, schema=SERVICE_PROGRAM_SCHEMA
+        DOMAIN, SERVICE_RESUME, async_service_resume, schema=SERVICE_COMMAND_SCHEMA
     )
     hass.services.async_register(
         DOMAIN, SERVICE_SELECT, async_service_select, schema=SERVICE_PROGRAM_SCHEMA
