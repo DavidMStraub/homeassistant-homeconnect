@@ -169,6 +169,17 @@ class DeviceWithDoor(HomeConnectDevice):
         }
 
 
+class DeviceWithLight(HomeConnectDevice):
+    """Device that has lighting."""
+
+    def get_light_entity(self):
+        """Get a dictionary with info about the lighting."""
+        return {
+            "device": self,
+            "desc": "Light",
+        }
+
+
 class Dryer(DeviceWithDoor, DeviceWithPrograms):
     """Dryer class."""
 
@@ -360,7 +371,7 @@ class CoffeeMaker(DeviceWithPrograms):
         return {"switch": program_switches, "sensor": program_sensors}
 
 
-class Hood(DeviceWithPrograms):
+class Hood(DeviceWithLight, DeviceWithPrograms):
     """Hood class."""
 
     PROGRAMS = [
@@ -371,9 +382,14 @@ class Hood(DeviceWithPrograms):
 
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
+        light_entity = self.get_light_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
-        return {"switch": program_switches, "sensor": program_sensors}
+        return {
+            "switch": program_switches,
+            "sensor": program_sensors,
+            "light" : [light_entity],
+        }
 
 
 class FridgeFreezer(DeviceWithDoor):
