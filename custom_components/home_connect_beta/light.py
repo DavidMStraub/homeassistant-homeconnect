@@ -25,8 +25,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         for device_dict in hc_api.devices:
             entity_dicts = device_dict.get("entities", {}).get("light", [])
             entity_list = [HomeConnectLight(**d) for d in entity_dicts]
-            """if "Hood" in str(type(device_dict["device"])):
-              entity_list += [HomeConnectLight(device_dict["device"])]"""
             entities += entity_list
         return entities
 
