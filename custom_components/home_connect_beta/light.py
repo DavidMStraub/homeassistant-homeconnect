@@ -72,12 +72,14 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
         """Update the light's status."""
         if (
             self.device.appliance.status.get(COOKING_LIGHTING, {}).get("value")
-            == True
+            is True
         ):
             self._state = True
         elif (
             self.device.appliance.status.get(COOKING_LIGHTING, {}).get("value")
-            == False
+            is False
         ):
             self._state = False
+        else:
+            self._state = None
         _LOGGER.debug("Updated, new light state: %s", self._state)
