@@ -1,0 +1,15 @@
+{
+    "config": {
+        "abort": {
+            "missing_configuration": "Het Home Connect component is niet geconfigureerd. Voor meer informtie volg de documentatie."
+        },
+        "create_entry": {
+            "default": "Toegang tot Home Connect is gelukt."
+        },
+        "step": {
+            "pick_implementation": {
+                "title": "Kies een authenticatie methode."
+            }
+        }
+    }
+}

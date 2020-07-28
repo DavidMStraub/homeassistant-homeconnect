@@ -65,7 +65,7 @@ SERVICE_PROGRAM_SCHEMA = vol.Schema(
 SERVICE_COMMAND_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): cv.entity_id})
 
 
-PLATFORMS = ["binary_sensor", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "sensor", "switch", "light"]
 
 
 def _get_appliance_by_entity_id(
