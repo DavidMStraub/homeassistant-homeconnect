@@ -1,9 +1,11 @@
 """Provides a light for Home Connect."""
 import logging
 
+from math import ceil
+
 from homeconnect.api import HomeConnectError
 
-from homeassistant.components.light import LightEntity
+from homeassistant.components.light import (ATTR_BRIGHTNESS, SUPPORT_BRIGHTNESS, LightEntity)
 
 from .const import (
     COOKING_LIGHTING,
@@ -38,22 +40,48 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
         """Initialize the entity."""
         super().__init__(device, desc)
         self._state = None
+        self._brightness = None
 
     @property
     def is_on(self):
         """Return true if the light is on."""
         return bool(self._state)
 
+    @property
+    def brightness(self):
+        """Return the brightness of the light."""
+        return self._brightness
+
+    @property
+    def supported_features(self):
+        """Flag supported features."""
+        return SUPPORT_BRIGHTNESS
+
     async def async_turn_on(self, **kwargs):
-        """Switch the light on."""
-        _LOGGER.debug("Tried to switch light on for: %s", self.name)
-        try:
-            await self.hass.async_add_executor_job(
-                self.device.appliance.set_setting, COOKING_LIGHTING, True,
-            )
-        except HomeConnectError as err:
-            _LOGGER.error("Error while trying to turn on light of device: %s", err)
-            self._state = False
+        """Switch the light on / change brightness."""
+        if ATTR_BRIGHTNESS in kwargs:
+            _LOGGER.debug("Tried to change brightness for: %s", self.name)
+            """ Convert Home Assistant brightness (0-255) to Home Connect brightness (10-100)
+            If <10 is sent to Home Connect, response is error
+            sending 10 does not switch the light on"""
+            brightness = 10 + ceil(kwargs[ATTR_BRIGHTNESS] / 255 * 90)
+            try:
+                await self.hass.async_add_executor_job(
+                    self.device.appliance.set_setting, COOKING_LIGHTINGBRIGHTNESS, brightness,
+                )
+            except HomeConnectError as err:
+                _LOGGER.error("Error while trying set the brightness: %s", err)
+                self._state = False
+                self._brightness = None
+        else:
+            _LOGGER.debug("Tried to switch light on for: %s", self.name)
+            try:
+                await self.hass.async_add_executor_job(
+                    self.device.appliance.set_setting, COOKING_LIGHTING, True,
+                )
+            except HomeConnectError as err:
+                _LOGGER.error("Error while trying to turn on light: %s", err)
+                self._state = False
         self.async_entity_update()
 
     async def async_turn_off(self, **kwargs):
@@ -64,7 +92,7 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
                 self.device.appliance.set_setting, COOKING_LIGHTING, False,
             )
         except HomeConnectError as err:
-            _LOGGER.error("Error while trying to turn off light of device: %s", err)
+            _LOGGER.error("Error while trying to turn off light: %s", err)
             self._state = True
         self.async_entity_update()
 
@@ -82,4 +110,10 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
             self._state = False
         else:
             self._state = None
+        brightness = self.device.appliance.status.get(COOKING_LIGHTINGBRIGHTNESS, {})
+        if not brightness:
+            self._brightness = None
+        else:
+            self._brightness = ceil((brightness.get("value") - 10) * 255 / 90)
         _LOGGER.debug("Updated, new light state: %s", self._state)
+        _LOGGER.debug("Updated, new brightness: %s", self._brightness)
