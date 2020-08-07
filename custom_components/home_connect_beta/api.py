@@ -56,6 +56,8 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
                 device = Dryer(self.hass, app)
             elif app.type == "Washer":
                 device = Washer(self.hass, app)
+            elif app.type == "WasherDryer":
+                device = WasherDryer(self.hass, app)
             elif app.type == "Dishwasher":
                 device = Dishwasher(self.hass, app)
             elif app.type == "FridgeFreezer":
@@ -184,6 +186,63 @@ class Dryer(DeviceWithDoor, DeviceWithPrograms):
     """Dryer class."""
 
     PROGRAMS = [
+        {"name": "LaundryCare.Dryer.Program.Cotton"},
+        {"name": "LaundryCare.Dryer.Program.Synthetic"},
+        {"name": "LaundryCare.Dryer.Program.Mix"},
+        {"name": "LaundryCare.Dryer.Program.Blankets"},
+        {"name": "LaundryCare.Dryer.Program.BusinessShirts"},
+        {"name": "LaundryCare.Dryer.Program.DownFeathers"},
+        {"name": "LaundryCare.Dryer.Program.Hygiene"},
+        {"name": "LaundryCare.Dryer.Program.Jeans"},
+        {"name": "LaundryCare.Dryer.Program.Outdoor"},
+        {"name": "LaundryCare.Dryer.Program.SyntheticRefresh"},
+        {"name": "LaundryCare.Dryer.Program.Towels"},
+        {"name": "LaundryCare.Dryer.Program.Delicates"},
+        {"name": "LaundryCare.Dryer.Program.Super40"},
+        {"name": "LaundryCare.Dryer.Program.Shirts15"},
+        {"name": "LaundryCare.Dryer.Program.Pillow"},
+        {"name": "LaundryCare.Dryer.Program.AntiShrink"},
+    ]
+
+    def get_entity_info(self):
+        """Get a dictionary with infos about the associated entities."""
+        door_entity = self.get_door_entity()
+        program_sensors = self.get_program_sensors()
+        program_switches = self.get_program_switches()
+        return {
+            "binary_sensor": [door_entity],
+            "switch": program_switches,
+            "sensor": program_sensors,
+        }
+
+
+
+
+class WasherDryer(DeviceWithDoor, DeviceWithPrograms):
+    """Washer class."""
+
+    PROGRAMS = [
+        {"name": "LaundryCare.Washer.Program.Cotton"},
+        {"name": "LaundryCare.Washer.Program.Cotton.CottonEco"},
+        {"name": "LaundryCare.Washer.Program.EasyCare"},
+        {"name": "LaundryCare.Washer.Program.Mix"},
+        {"name": "LaundryCare.Washer.Program.DelicatesSilk"},
+        {"name": "LaundryCare.Washer.Program.Wool"},
+        {"name": "LaundryCare.Washer.Program.Sensitive"},
+        {"name": "LaundryCare.Washer.Program.Auto30"},
+        {"name": "LaundryCare.Washer.Program.Auto40"},
+        {"name": "LaundryCare.Washer.Program.Auto60"},
+        {"name": "LaundryCare.Washer.Program.Chiffon"},
+        {"name": "LaundryCare.Washer.Program.Curtains"},
+        {"name": "LaundryCare.Washer.Program.DarkWash"},
+        {"name": "LaundryCare.Washer.Program.Dessous"},
+        {"name": "LaundryCare.Washer.Program.Monsoon"},
+        {"name": "LaundryCare.Washer.Program.Outdoor"},
+        {"name": "LaundryCare.Washer.Program.PlushToy"},
+        {"name": "LaundryCare.Washer.Program.ShirtsBlouses"},
+        {"name": "LaundryCare.Washer.Program.SportFitness"},
+        {"name": "LaundryCare.Washer.Program.Towels"},
+        {"name": "LaundryCare.Washer.Program.WaterProof"},
         {"name": "LaundryCare.Dryer.Program.Cotton"},
         {"name": "LaundryCare.Dryer.Program.Synthetic"},
         {"name": "LaundryCare.Dryer.Program.Mix"},
