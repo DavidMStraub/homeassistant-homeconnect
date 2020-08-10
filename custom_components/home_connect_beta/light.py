@@ -106,7 +106,7 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
         else:
             self._state = None
         brightness = self.device.appliance.status.get(COOKING_LIGHTINGBRIGHTNESS, {})
-        if not brightness:
+        if brightness is None:
             self._brightness = None
         else:
             self._brightness = ceil((brightness.get("value") - 10) * 255 / 90)
