@@ -1,17 +1,16 @@
 """Provides a light for Home Connect."""
 import logging
-
 from math import ceil
 
 from homeconnect.api import HomeConnectError
 
-from homeassistant.components.light import (ATTR_BRIGHTNESS, SUPPORT_BRIGHTNESS, LightEntity)
-
-from .const import (
-    COOKING_LIGHTING,
-    COOKING_LIGHTINGBRIGHTNESS,
-    DOMAIN,
+from homeassistant.components.light import (
+    ATTR_BRIGHTNESS,
+    LightEntity,
+    SUPPORT_BRIGHTNESS,
 )
+
+from .const import COOKING_LIGHTING, COOKING_LIGHTINGBRIGHTNESS, DOMAIN
 from .entity import HomeConnectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,7 +66,9 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
             brightness = 10 + ceil(kwargs[ATTR_BRIGHTNESS] / 255 * 90)
             try:
                 await self.hass.async_add_executor_job(
-                    self.device.appliance.set_setting, COOKING_LIGHTINGBRIGHTNESS, brightness,
+                    self.device.appliance.set_setting,
+                    COOKING_LIGHTINGBRIGHTNESS,
+                    brightness,
                 )
             except HomeConnectError as err:
                 _LOGGER.error("Error while trying set the brightness: %s", err)
@@ -98,14 +99,10 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
 
     async def async_update(self):
         """Update the light's status."""
-        if (
-            self.device.appliance.status.get(COOKING_LIGHTING, {}).get("value")
-            is True
-        ):
+        if self.device.appliance.status.get(COOKING_LIGHTING, {}).get("value") is True:
             self._state = True
         elif (
-            self.device.appliance.status.get(COOKING_LIGHTING, {}).get("value")
-            is False
+            self.device.appliance.status.get(COOKING_LIGHTING, {}).get("value") is False
         ):
             self._state = False
         else:
