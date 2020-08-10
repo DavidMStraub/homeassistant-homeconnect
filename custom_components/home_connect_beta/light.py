@@ -60,9 +60,7 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
         """Switch the light on / change brightness."""
         if ATTR_BRIGHTNESS in kwargs:
             _LOGGER.debug("Tried to change brightness for: %s", self.name)
-            """ Convert Home Assistant brightness (0-255) to Home Connect brightness (10-100)
-            If <10 is sent to Home Connect, response is error
-            sending 10 does not switch the light on"""
+            """Convert Home Assistant brightness (0-255) to Home Connect brightness (10-100)"""
             brightness = 10 + ceil(kwargs[ATTR_BRIGHTNESS] / 255 * 90)
             try:
                 await self.hass.async_add_executor_job(
