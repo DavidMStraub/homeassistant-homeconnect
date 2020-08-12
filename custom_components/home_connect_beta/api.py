@@ -1,7 +1,7 @@
 """API for Home Connect bound to HASS OAuth."""
 
-from asyncio import run_coroutine_threadsafe
 import logging
+from asyncio import run_coroutine_threadsafe
 
 import homeconnect
 from homeconnect.api import HomeConnectError
@@ -13,8 +13,10 @@ from homeassistant.helpers.dispatcher import dispatcher_send
 
 from .const import (
     BSH_ACTIVE_PROGRAM,
+    BSH_AMBIENTLIGHTENABLED,
     BSH_POWER_OFF,
     BSH_POWER_STANDBY,
+    COOKING_LIGHTING,
     SIGNAL_UPDATE_ENTITIES,
 )
 
@@ -174,12 +176,21 @@ class DeviceWithDoor(HomeConnectDevice):
 class DeviceWithLight(HomeConnectDevice):
     """Device that has lighting."""
 
-    def get_light_entity(self):
+    def get_light_entities(self):
         """Get a dictionary with info about the lighting."""
-        return {
-            "device": self,
-            "desc": "Light",
-        }
+        lights = []
+        try:
+            settings = self.appliance.get_settings()
+            if COOKING_LIGHTING in settings:
+                lights.append({"device": self, "desc": "Light", "ambient": None})
+            if BSH_AMBIENTLIGHTENABLED in settings:
+                lights.append(
+                    {"device": self, "desc": "Ambient light", "ambient": True}
+                )
+            return lights
+        except (HomeConnectError, ValueError):
+            _LOGGER.debug("Unable to fetch settings. Probably offline.")
+        return []
 
 
 class Dryer(DeviceWithDoor, DeviceWithPrograms):
@@ -214,8 +225,6 @@ class Dryer(DeviceWithDoor, DeviceWithPrograms):
             "switch": program_switches,
             "sensor": program_sensors,
         }
-
-
 
 
 class WasherDryer(DeviceWithDoor, DeviceWithPrograms):
@@ -273,7 +282,7 @@ class WasherDryer(DeviceWithDoor, DeviceWithPrograms):
         }
 
 
-class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
+class Dishwasher(DeviceWithDoor, DeviceWithLight, DeviceWithPrograms):
     """Dishwasher class."""
 
     PROGRAMS = [
@@ -303,6 +312,7 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
 
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
+        light_entities = self.get_light_entities()
         door_entity = self.get_door_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
@@ -310,6 +320,7 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
             "binary_sensor": [door_entity],
             "switch": program_switches,
             "sensor": program_sensors,
+            "light": light_entities,
         }
 
 
@@ -441,13 +452,13 @@ class Hood(DeviceWithLight, DeviceWithPrograms):
 
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
-        light_entity = self.get_light_entity()
+        light_entities = self.get_light_entities()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
         return {
             "switch": program_switches,
             "sensor": program_sensors,
-            "light" : [light_entity],
+            "light": light_entities,
         }
 
 
