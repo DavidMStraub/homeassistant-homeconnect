@@ -132,7 +132,7 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
 
         elif ATTR_BRIGHTNESS in kwargs:
             _LOGGER.debug("Tried to change brightness for: %s", self.name)
-            """ Convert Home Assistant brightness (0-255) to Home Connect brightness (10-100)"""
+            """Convert Home Assistant brightness (0-255) to Home Connect brightness (10-100)."""
             brightness = 10 + ceil(kwargs[ATTR_BRIGHTNESS] / 255 * 90)
             try:
                 await self.hass.async_add_executor_job(
@@ -180,7 +180,7 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
         if self._ambient:
             color = self.device.appliance.status.get(self._customcolorkey, {})
 
-            if color is None:
+            if not color:
                 self._hs_color = None
                 self._brightness = None
             else:
