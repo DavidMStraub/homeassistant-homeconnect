@@ -99,27 +99,27 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
                     )
                 except HomeConnectError as err:
                     _LOGGER.error("Error while trying selecting customcolor: %s", err)
+                if self._brightness != None:
+                    brightness = 10 + ceil(self._brightness / 255 * 90)
+                    if ATTR_BRIGHTNESS in kwargs:
+                        brightness = 10 + ceil(kwargs[ATTR_BRIGHTNESS] / 255 * 90)
 
-                brightness = 10 + ceil(self._brightness / 255 * 90)
-                if ATTR_BRIGHTNESS in kwargs:
-                    brightness = 10 + ceil(kwargs[ATTR_BRIGHTNESS] / 255 * 90)
+                    hs_color = self._hs_color
+                    if ATTR_HS_COLOR in kwargs:
+                        hs_color = kwargs[ATTR_HS_COLOR]
 
-                hs_color = self._hs_color
-                if ATTR_HS_COLOR in kwargs:
-                    hs_color = kwargs[ATTR_HS_COLOR]
-
-                if hs_color != None:
-                    rgb = color_util.color_hsv_to_RGB(*hs_color, brightness)
-                    hex = color_util.color_rgb_to_hex(rgb[0], rgb[1], rgb[2])
-                    try:
-                        await self.hass.async_add_executor_job(
-                            self.device.appliance.set_setting,
-                            self._customcolorkey,
-                            "#" + hex,
-                        )
-                    except HomeConnectError as err:
-                        _LOGGER.error("Error while trying setting the color: %s", err)
-                        self._state = False
+                    if hs_color != None:
+                        rgb = color_util.color_hsv_to_RGB(*hs_color, brightness)
+                        hex = color_util.color_rgb_to_hex(rgb[0], rgb[1], rgb[2])
+                        try:
+                            await self.hass.async_add_executor_job(
+                                self.device.appliance.set_setting,
+                                self._customcolorkey,
+                                "#" + hex,
+                            )
+                        except HomeConnectError as err:
+                            _LOGGER.error("Error while trying setting the color: %s", err)
+                            self._state = False
             else:
                 _LOGGER.debug("Tried to switch light on for: %s", self.name)
                 try:
