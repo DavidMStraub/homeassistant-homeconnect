@@ -127,7 +127,7 @@ class HomeConnectLight(HomeConnectEntity, LightEntity):
                         self.device.appliance.set_setting, self._key, True,
                     )
                 except HomeConnectError as err:
-                    _LOGGER.error("Error while trying to turn on light: %s", err)
+                    _LOGGER.error("Error while trying to turn on ambient light: %s", err)
                     self._state = False
 
         elif ATTR_BRIGHTNESS in kwargs:
