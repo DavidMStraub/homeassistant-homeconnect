@@ -1,6 +1,6 @@
 {
     "name": "Home Connect",
     "domains": ["sensor", "binary_sensor", "switch"],
-    "homeassistant": "0.115",
+    "homeassistant": "0.115.0",
     "render_readme": true
 }
