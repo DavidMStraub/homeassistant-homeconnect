@@ -4,6 +4,6 @@
   "documentation": "https://www.home-assistant.io/integrations/home_connect_beta",
   "dependencies": ["http"],
   "codeowners": ["@DavidMStraub"],
-  "requirements": ["homeconnect==0.6"],
+  "requirements": ["homeconnect==0.6.2"],
   "config_flow": true
 }
