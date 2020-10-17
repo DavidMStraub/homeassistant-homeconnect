@@ -1,7 +1,7 @@
 """API for Home Connect bound to HASS OAuth."""
 
-from asyncio import run_coroutine_threadsafe
 import logging
+from asyncio import run_coroutine_threadsafe
 
 import homeconnect
 from homeconnect.api import HomeConnectError
@@ -13,8 +13,10 @@ from homeassistant.helpers.dispatcher import dispatcher_send
 
 from .const import (
     BSH_ACTIVE_PROGRAM,
+    BSH_AMBIENTLIGHTENABLED,
     BSH_POWER_OFF,
     BSH_POWER_STANDBY,
+    COOKING_LIGHTING,
     SIGNAL_UPDATE_ENTITIES,
 )
 
@@ -179,6 +181,19 @@ class DeviceWithLight(HomeConnectDevice):
         return {
             "device": self,
             "desc": "Light",
+            "ambient" : None,
+        }
+
+
+class DeviceWithAmbientLight(HomeConnectDevice):
+    """Device that has ambient lighting."""
+
+    def get_ambientlight_entity(self):
+        """Get a dictionary with info about the ambient lighting."""
+        return {
+            "device": self,
+            "desc": "AmbientLight",
+            "ambient" : True,
         }
 
 
@@ -214,8 +229,6 @@ class Dryer(DeviceWithDoor, DeviceWithPrograms):
             "switch": program_switches,
             "sensor": program_sensors,
         }
-
-
 
 
 class WasherDryer(DeviceWithDoor, DeviceWithPrograms):
@@ -273,7 +286,7 @@ class WasherDryer(DeviceWithDoor, DeviceWithPrograms):
         }
 
 
-class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
+class Dishwasher(DeviceWithDoor, DeviceWithAmbientLight, DeviceWithPrograms):
     """Dishwasher class."""
 
     PROGRAMS = [
@@ -303,6 +316,7 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
 
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
+        ambientlight_entity = self.get_ambientlight_entity()
         door_entity = self.get_door_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
@@ -310,6 +324,7 @@ class Dishwasher(DeviceWithDoor, DeviceWithPrograms):
             "binary_sensor": [door_entity],
             "switch": program_switches,
             "sensor": program_sensors,
+            "light": [ambientlight_entity]
         }
 
 
@@ -430,7 +445,7 @@ class CoffeeMaker(DeviceWithPrograms):
         return {"switch": program_switches, "sensor": program_sensors}
 
 
-class Hood(DeviceWithLight, DeviceWithPrograms):
+class Hood(DeviceWithLight, DeviceWithAmbientLight, DeviceWithPrograms):
     """Hood class."""
 
     PROGRAMS = [
@@ -442,12 +457,13 @@ class Hood(DeviceWithLight, DeviceWithPrograms):
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
         light_entity = self.get_light_entity()
+        ambientlight_entity = self.get_ambientlight_entity()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
         return {
             "switch": program_switches,
             "sensor": program_sensors,
-            "light" : [light_entity],
+            "light" : [light_entity, ambientlight_entity]
         }
 
 
