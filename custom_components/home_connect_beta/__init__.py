@@ -19,6 +19,9 @@ from homeconnect.api import HomeConnectError
 from . import api, config_flow
 from .const import (
     ATTR_KEY,
+    ATTR_OPTION_KEY,
+    ATTR_OPTION_UNIT,
+    ATTR_OPTION_VALUE,
     ATTR_PROGRAM,
     ATTR_VALUE,
     BSH_PAUSE,
@@ -32,6 +35,7 @@ from .const import (
     SERVICE_RESUME,
     SERVICE_SELECT,
     SERVICE_SETTING,
+    SERVICE_START,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -59,7 +63,13 @@ SERVICE_SETTING_SCHEMA = vol.Schema(
 )
 
 SERVICE_PROGRAM_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required(ATTR_PROGRAM): str,}
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+        vol.Required(ATTR_PROGRAM): str,
+        vol.Optional(ATTR_OPTION_KEY): str,
+        vol.Optional(ATTR_OPTION_VALUE): vol.Any(int, str),
+        vol.Optional(ATTR_OPTION_UNIT): str,
+    }
 )
 
 SERVICE_COMMAND_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): cv.entity_id})
@@ -105,9 +115,19 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         """Generic callback for services taking a program."""
         program = call.data[ATTR_PROGRAM]
         entity_id = call.data[ATTR_ENTITY_ID]
+        option_key = call.data.get(ATTR_OPTION_KEY, None)
+        option_value = call.data.get(ATTR_OPTION_VALUE, None)
+        option_unit = call.data.get(ATTR_OPTION_UNIT, None)
+        if option_key is not None and option_value is not None:
+            _options = {"key": option_key, "value": option_value}
+            if option_unit is not None:
+                _options["unit"] = option_unit
+            options = [_options]
+        else:
+            options = None
         appliance = _get_appliance_by_entity_id(hass, entity_id)
         if appliance is not None:
-            await hass.async_add_executor_job(getattr(appliance, method), program)
+            await hass.async_add_executor_job(getattr(appliance, method), program, options)
 
     async def _async_service_command(call, command):
         """Generic callback for services executing a command."""
@@ -151,6 +171,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         """Service for changing a setting."""
         await _async_service_key_value(call, "set_setting")
 
+    async def async_service_start(call):
+        """Service for starting a program."""
+        await _async_service_program(call, "start_program")
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_OPTION_ACTIVE,
@@ -174,6 +198,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     )
     hass.services.async_register(
         DOMAIN, SERVICE_SELECT, async_service_select, schema=SERVICE_PROGRAM_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_START, async_service_start, schema=SERVICE_PROGRAM_SCHEMA
     )
 
     return True
