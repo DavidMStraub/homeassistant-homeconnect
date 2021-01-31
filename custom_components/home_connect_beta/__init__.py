@@ -65,7 +65,7 @@ SERVICE_PROGRAM_SCHEMA = vol.Schema(
 SERVICE_COMMAND_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): cv.entity_id})
 
 
-PLATFORMS = ["binary_sensor", "sensor", "switch", "light"]
+PLATFORMS = ["binary_sensor", "light", "sensor", "switch"]
 
 
 def _get_appliance_by_entity_id(
@@ -181,8 +181,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Home Connect from a config entry."""
-    implementation = await config_entry_oauth2_flow.async_get_config_entry_implementation(
+    implementation = (
+        await config_entry_oauth2_flow.async_get_config_entry_implementation(
         hass, entry
+        )
     )
 
     hc_api = api.ConfigEntryAuth(hass, entry, implementation)
