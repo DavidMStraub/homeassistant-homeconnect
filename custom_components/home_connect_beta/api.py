@@ -1,7 +1,7 @@
 """API for Home Connect bound to HASS OAuth."""
 
-import logging
 from asyncio import run_coroutine_threadsafe
+import logging
 
 import homeconnect
 from homeconnect.api import HomeConnectError
@@ -13,11 +13,9 @@ from homeassistant.helpers.dispatcher import dispatcher_send
 
 from .const import (
     BSH_ACTIVE_PROGRAM,
-    BSH_AMBIENTLIGHTENABLED,
     BSH_OPERATION_STATE,
     BSH_POWER_OFF,
     BSH_POWER_STANDBY,
-    COOKING_LIGHTING,
     SIGNAL_UPDATE_ENTITIES,
 )
 
@@ -74,7 +72,7 @@ class ConfigEntryAuth(homeconnect.HomeConnectAPI):
             elif app.type == "Hob":
                 device = Hob(self.hass, app)
             else:
-                _LOGGER.warning("Appliance type %s not implemented.", app.type)
+                _LOGGER.warning("Appliance type %s not implemented", app.type)
                 continue
             devices.append({"device": device, "entities": device.get_entity_info()})
         self.devices = devices
@@ -92,22 +90,21 @@ class HomeConnectDevice:
         """Initialize the device class."""
         self.hass = hass
         self.appliance = appliance
-        self.entities = []
 
     def initialize(self):
         """Fetch the info needed to initialize the device."""
         try:
             self.appliance.get_status()
         except (HomeConnectError, ValueError):
-            _LOGGER.debug("Unable to fetch appliance status. Probably offline.")
+            _LOGGER.debug("Unable to fetch appliance status. Probably offline")
         try:
             self.appliance.get_settings()
         except (HomeConnectError, ValueError):
-            _LOGGER.debug("Unable to fetch settings. Probably offline.")
+            _LOGGER.debug("Unable to fetch settings. Probably offline")
         try:
             program_active = self.appliance.get_programs_active()
         except (HomeConnectError, ValueError):
-            _LOGGER.debug("Unable to fetch active programs. Probably offline.")
+            _LOGGER.debug("Unable to fetch active programs. Probably offline")
             program_active = None
         if program_active and "key" in program_active:
             self.appliance.status[BSH_ACTIVE_PROGRAM] = {"value": program_active["key"]}
@@ -202,7 +199,7 @@ class DeviceWithLight(HomeConnectDevice):
         return {
             "device": self,
             "desc": "Light",
-            "ambient" : None,
+            "ambient": None,
         }
 
 
@@ -214,7 +211,7 @@ class DeviceWithAmbientLight(HomeConnectDevice):
         return {
             "device": self,
             "desc": "AmbientLight",
-            "ambient" : True,
+            "ambient": True,
         }
 
 
@@ -386,7 +383,6 @@ class Dishwasher(
 
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
-        ambientlight_entity = self.get_ambientlight_entity()
         door_entity = self.get_door_entity()
         remote_control = self.get_remote_control()
         remote_start = self.get_remote_start()
@@ -397,7 +393,6 @@ class Dishwasher(
             "binary_sensor": [door_entity, remote_control, remote_start],
             "switch": program_switches,
             "sensor": program_sensors + op_state_sensor,
-            "light": [ambientlight_entity]
         }
 
 
@@ -571,7 +566,7 @@ class Hood(
             "binary_sensor": [remote_control, remote_start],
             "switch": program_switches,
             "sensor": program_sensors + op_state_sensor,
-            "light" : [light_entity, ambientlight_entity]
+            "light": [light_entity, ambientlight_entity],
         }
 
 
