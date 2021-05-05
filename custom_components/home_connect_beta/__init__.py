@@ -1,13 +1,10 @@
 """Support for BSH Home Connect appliances."""
 
-import asyncio
 import logging
 from datetime import timedelta
 from typing import Optional
 
 import voluptuous as vol
-from requests import HTTPError
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, CONF_CLIENT_ID, CONF_CLIENT_SECRET
 from homeassistant.core import HomeAssistant
@@ -15,6 +12,7 @@ from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
 from homeconnect.api import HomeConnectError
+from requests import HTTPError
 
 from . import api, config_flow
 from .const import (
@@ -53,6 +51,7 @@ CONFIG_SCHEMA = vol.Schema(
     },
     extra=vol.ALLOW_EXTRA,
 )
+
 
 SERVICE_SETTING_SCHEMA = vol.Schema(
     {
@@ -127,7 +126,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             options = None
         appliance = _get_appliance_by_entity_id(hass, entity_id)
         if appliance is not None:
-            await hass.async_add_executor_job(getattr(appliance, method), program, options)
+            await hass.async_add_executor_job(
+                getattr(appliance, method), program, options
+            )
 
     async def _async_service_command(call, command):
         """Generic callback for services executing a command."""
@@ -208,10 +209,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Home Connect from a config entry."""
-    implementation = (
-        await config_entry_oauth2_flow.async_get_config_entry_implementation(
+    implementation = await config_entry_oauth2_flow.async_get_config_entry_implementation(
         hass, entry
-        )
     )
 
     hc_api = api.ConfigEntryAuth(hass, entry, implementation)
@@ -220,24 +219,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await update_all_devices(hass, entry)
 
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in PLATFORMS
-            ]
-        )
-    )
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
