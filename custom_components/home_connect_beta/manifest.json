@@ -1,6 +1,6 @@
 {
   "domain": "home_connect_beta",
-  "name": "Home Connect",
+  "name": "Home Connect (Beta)",
   "documentation": "https://www.home-assistant.io/integrations/home_connect",
   "dependencies": ["http"],
   "codeowners": ["@DavidMStraub"],
