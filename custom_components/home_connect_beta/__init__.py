@@ -17,10 +17,9 @@ from requests import HTTPError
 from . import api, config_flow
 from .const import (
     ATTR_KEY,
-    ATTR_OPTION_KEY,
-    ATTR_OPTION_UNIT,
-    ATTR_OPTION_VALUE,
+    ATTR_OPTIONS,
     ATTR_PROGRAM,
+    ATTR_UNIT,
     ATTR_VALUE,
     BSH_PAUSE,
     BSH_RESUME,
@@ -65,9 +64,13 @@ SERVICE_PROGRAM_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_id,
         vol.Required(ATTR_PROGRAM): str,
-        vol.Optional(ATTR_OPTION_KEY): str,
-        vol.Optional(ATTR_OPTION_VALUE): vol.Any(int, str),
-        vol.Optional(ATTR_OPTION_UNIT): str,
+        vol.Optional(ATTR_OPTIONS): [
+            {
+                vol.Required(ATTR_KEY): str,
+                vol.Required(ATTR_VALUE): vol.Any(int, str),
+                vol.Optional(ATTR_UNIT): str,
+            }
+        ],
     }
 )
 
@@ -114,16 +117,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         """Generic callback for services taking a program."""
         program = call.data[ATTR_PROGRAM]
         entity_id = call.data[ATTR_ENTITY_ID]
-        option_key = call.data.get(ATTR_OPTION_KEY, None)
-        option_value = call.data.get(ATTR_OPTION_VALUE, None)
-        option_unit = call.data.get(ATTR_OPTION_UNIT, None)
-        if option_key is not None and option_value is not None:
-            _options = {"key": option_key, "value": option_value}
-            if option_unit is not None:
-                _options["unit"] = option_unit
-            options = [_options]
-        else:
-            options = None
+        options = call.data.get(ATTR_OPTIONS)
         appliance = _get_appliance_by_entity_id(hass, entity_id)
         if appliance is not None:
             await hass.async_add_executor_job(
