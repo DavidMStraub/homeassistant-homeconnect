@@ -6,7 +6,12 @@ from typing import Optional
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ENTITY_ID, CONF_CLIENT_ID, CONF_CLIENT_SECRET
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    CONF_CLIENT_ID,
+    CONF_CLIENT_SECRET,
+    CONF_DEVICE,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers import config_validation as cv
@@ -57,6 +62,7 @@ SERVICE_SETTING_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_id,
         vol.Required(ATTR_KEY): str,
         vol.Required(ATTR_VALUE): vol.Coerce(str),
+        vol.Optional(ATTR_UNIT): str,
     }
 )
 
@@ -86,7 +92,7 @@ def _get_appliance_by_entity_id(
     """Return a Home Connect appliance instance given an entity_id."""
     for hc in hass.data[DOMAIN].values():
         for dev_dict in hc.devices:
-            device = dev_dict["device"]
+            device = dev_dict[CONF_DEVICE]
             for entity in device.entities:
                 if entity.entity_id == entity_id:
                     return device.appliance
