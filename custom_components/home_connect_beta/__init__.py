@@ -141,11 +141,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         """Generic callback for services taking a key and value."""
         key = call.data[ATTR_KEY]
         value = call.data[ATTR_VALUE]
+        unit = call.data.get(ATTR_UNIT)
         entity_id = call.data[ATTR_ENTITY_ID]
         appliance = _get_appliance_by_entity_id(hass, entity_id)
         if appliance is not None:
             await hass.async_add_executor_job(
-                getattr(appliance, method), key, value,
+                getattr(appliance, method), key, value, unit,
             )
 
     async def async_service_option_active(call):
