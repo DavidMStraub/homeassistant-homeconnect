@@ -9,6 +9,8 @@ from .const import (
     DOMAIN,
 )
 
+from .entity import HomeConnectEntity
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -33,6 +35,9 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorEntity):
         """Initialize the entity."""
         super().__init__(device, desc)
         self._state = None
+        self._states = states
+        _LOGGER.debug('states %s', states)
+
 
     @property
     def is_on(self):
