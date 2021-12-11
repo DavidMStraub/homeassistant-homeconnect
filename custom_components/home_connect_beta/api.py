@@ -12,6 +12,8 @@ from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.dispatcher import dispatcher_send
 
 from .const import (
+    BSH_DOOR_STATE,
+    BSH_OPERATION_STATE,
     BSH_ACTIVE_PROGRAM,
     BSH_AMBIENTLIGHTENABLED,
     BSH_POWER_OFF,
@@ -128,6 +130,52 @@ class DeviceWithPrograms(HomeConnectDevice):
         """Get the available programs."""
         return self.PROGRAMS
 
+    def get_is_finished_binary_sensor(self):
+        """Get a dictionary with info about the finish state binary sensor."""
+        return {
+            "device": self,
+            "desc": "is finished",
+            "device_class": "moving",
+            "states": {
+                "key": BSH_OPERATION_STATE,
+                "on": [
+                    "BSH.Common.EnumType.OperationState.Finished",
+                ],
+                "off": [
+                    "BSH.Common.EnumType.OperationState.Ready",
+                    "BSH.Common.EnumType.OperationState.DelayedStart",
+                    "BSH.Common.EnumType.OperationState.Run",
+                    "BSH.Common.EnumType.OperationState.Pause",
+                    "BSH.Common.EnumType.OperationState.ActionRequired",
+                    "BSH.Common.EnumType.OperationState.Aborting",
+                    "BSH.Common.EnumType.OperationState.Inactive"
+                ]
+            }
+        }
+
+    def get_is_running_binary_sensor(self):
+        """Get a dictionary with info about the finish state binary sensor."""
+        return {
+            "device": self,
+            "desc": "is running",
+            "device_class": "moving",
+            "states": {
+                "key": BSH_OPERATION_STATE,
+                "on": [
+                    "BSH.Common.EnumType.OperationState.Run",
+                ],
+                "off": [
+                    "BSH.Common.EnumType.OperationState.Ready",
+                    "BSH.Common.EnumType.OperationState.DelayedStart",
+                    "BSH.Common.EnumType.OperationState.Pause",
+                    "BSH.Common.EnumType.OperationState.Finished",
+                    "BSH.Common.EnumType.OperationState.ActionRequired",
+                    "BSH.Common.EnumType.OperationState.Aborting",
+                    "BSH.Common.EnumType.OperationState.Inactive",
+                ]
+            }
+        }
+
     def get_program_switches(self):
         """Get a dictionary with info about program switches.
 
@@ -170,6 +218,16 @@ class DeviceWithDoor(HomeConnectDevice):
             "device": self,
             "desc": "Door",
             "device_class": "door",
+            "states": {
+                "key": BSH_DOOR_STATE,
+                "off": [
+                    "BSH.Common.EnumType.DoorState.Closed",
+                    "BSH.Common.EnumType.DoorState.Locked",
+                ],
+                "on": [
+                    "BSH.Common.EnumType.DoorState.Open",
+                ]
+            }
         }
 
 
@@ -392,10 +450,12 @@ class Washer(DeviceWithDoor, DeviceWithPrograms):
     def get_entity_info(self):
         """Get a dictionary with infos about the associated entities."""
         door_entity = self.get_door_entity()
+        is_finished_entity = self.get_is_finished_binary_sensor()
+        is_running_entity = self.get_is_running_binary_sensor()
         program_sensors = self.get_program_sensors()
         program_switches = self.get_program_switches()
         return {
-            "binary_sensor": [door_entity],
+            "binary_sensor": [door_entity, is_finished_entity, is_running_entity],
             "switch": program_switches,
             "sensor": program_sensors,
         }
