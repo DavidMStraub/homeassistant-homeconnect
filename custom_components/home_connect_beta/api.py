@@ -20,7 +20,6 @@ from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.dispatcher import dispatcher_send
 
 from .const import (
-<<<<<<< HEAD
     ATTR_AMBIENT,
     ATTR_DESC,
     ATTR_DEVICE,
@@ -34,10 +33,6 @@ from .const import (
     BSH_DOOR_STATE_OPEN,
     BSH_REMOTE_CONTROL_ACTIVATION_STATE,
     BSH_REMOTE_START_ALLOWANCE_STATE,
-=======
-    BSH_DOOR_STATE,
-    BSH_OPERATION_STATE,
->>>>>>> refs/remotes/origin/master
     BSH_ACTIVE_PROGRAM,
     BSH_OPERATION_STATE,
     BSH_POWER_OFF,
