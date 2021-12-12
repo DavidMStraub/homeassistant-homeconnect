@@ -572,7 +572,7 @@ class Washer(
         is_finished_entity = self.get_is_finished_binary_sensor()
         is_running_entity = self.get_is_running_binary_sensor()
         return {
-            "binary_sensor": [door_entity, is_finished_entity, is_running_entity],
+            "binary_sensor": [door_entity, remote_control, remote_start, is_finished_entity, is_running_entity],
             "switch": program_switches,
             "sensor": program_sensors + op_state_sensor,
         }
