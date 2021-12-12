@@ -36,8 +36,6 @@ class HomeConnectBinarySensor(HomeConnectEntity, BinarySensorEntity):
         super().__init__(device, desc)
         self._state = None
         self._states = states
-        _LOGGER.debug('states %s', states)
-
 
     @property
     def is_on(self):
