@@ -1,4 +1,4 @@
-**:warning: Breaking change: as of version 1.0, the component has been renamed and this repository will be used for beta testing new features that are not part of the Home Assistant Core Home Connect integration based on this work. :warning:**
+**:warning: This repository is no longer up to date with the Home Assistant Core integration and is no longer actively maintained. Please raise feature requests and issues against Home Assistant Core. :warning:**
 
 # Home Assistant Home Connect development repository
 
